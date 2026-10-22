@@ -153,7 +153,7 @@ function ReviewBody({
         </div>
 
         <div className="box">
-          <AudioPlayer src={url} loadError={urlError} fallbackDuration={rec.duration_sec} label={`Recording · ${fmtSec(rec.duration_sec)}`} />
+          <AudioPlayer src={url} path={rec.audio_path} loadError={urlError} fallbackDuration={rec.duration_sec} label={`Recording · ${fmtSec(rec.duration_sec)}`} />
         </div>
 
         <div className="box">

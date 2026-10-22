@@ -226,6 +226,7 @@ function TeacherNote({ rec }: { rec: Recording }) {
       {rec.note_path && (
         <AudioPlayer
           src={url}
+          path={rec.note_path}
           loadError={error}
           tone="clay"
           fallbackDuration={rec.note_duration_sec}

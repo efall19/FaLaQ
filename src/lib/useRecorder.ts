@@ -4,7 +4,9 @@ export type RecorderState = 'idle' | 'starting' | 'recording' | 'recorded' | 'de
 
 function pickMime(): string {
   if (typeof MediaRecorder === 'undefined') return '';
-  const candidates = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm', 'audio/ogg;codecs=opus'];
+  // MP4/AAC first: it plays on every device, including iPhone Safari, which is
+  // unreliable with WebM. Older Android browsers fall back to WebM.
+  const candidates = ['audio/mp4;codecs=mp4a.40.2', 'audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'];
   for (const m of candidates) {
     try {
       if (MediaRecorder.isTypeSupported(m)) return m;

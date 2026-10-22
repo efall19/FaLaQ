@@ -34,23 +34,35 @@ export function AudioPlayer({
   tone = 'teal',
   label,
   loadError,
+  path,
 }: {
   src: string | null;
   fallbackDuration?: number | null;
   tone?: 'teal' | 'clay' | 'ink';
   label?: ReactNode;
   loadError?: boolean;
+  /** Storage path of the file, used to tell when this device can't play its format. */
+  path?: string | null;
 }) {
   const ref = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
   const [pos, setPos] = useState(0);
   const [dur, setDur] = useState<number>(fallbackDuration ?? 0);
   const [failed, setFailed] = useState(false);
+  const stallTimer = useRef<number | null>(null);
+
+  // A format this browser says it can't play at all (e.g. WebM on some iPhones).
+  const ext = (path ?? '').split('.').pop()?.toLowerCase() ?? '';
+  const mime = ext === 'webm' ? 'audio/webm' : ext === 'ogg' ? 'audio/ogg' : ext === 'm4a' || ext === 'mp4' ? 'audio/mp4' : '';
+  const unsupported = Boolean(mime) && typeof document !== 'undefined' && document.createElement('audio').canPlayType(mime) === '';
 
   useEffect(() => {
     setPlaying(false);
     setPos(0);
     setFailed(false);
+    return () => {
+      if (stallTimer.current) window.clearTimeout(stallTimer.current);
+    };
   }, [src]);
 
   useEffect(() => {
@@ -64,7 +76,19 @@ export function AudioPlayer({
       a.pause();
       return;
     }
-    a.play().catch(() => setFailed(true));
+    a.play()
+      .then(() => {
+        // Some devices "play" a file they can't decode: nothing moves and nothing is heard.
+        const start = a.currentTime;
+        if (stallTimer.current) window.clearTimeout(stallTimer.current);
+        stallTimer.current = window.setTimeout(() => {
+          if (!a.paused && a.currentTime <= start + 0.05) {
+            a.pause();
+            setFailed(true);
+          }
+        }, 3000);
+      })
+      .catch(() => setFailed(true));
   };
 
   const total = dur || fallbackDuration || 0;
@@ -105,7 +129,17 @@ export function AudioPlayer({
         <div className="bar">
           <div className="bar-fill" style={{ width: `${pct}%` }} />
         </div>
-        {(failed || loadError) && <div className="player-error">Couldn't load this audio. Check the connection and try again.</div>}
+        {loadError && <div className="player-error">Couldn't load this audio. Check the connection and try again.</div>}
+        {!loadError && (failed || unsupported) && (
+          <div className="player-error">
+            This recording won't play on this device.{' '}
+            {src && (
+              <a href={src} target="_blank" rel="noreferrer">
+                Open the file
+              </a>
+            )}
+          </div>
+        )}
       </div>
       <span className="player-time">{playing || pos ? fmtSec(pos) : fmtSec(total)}</span>
     </div>
