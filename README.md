@@ -70,8 +70,8 @@ select id, 'child', 'Adam' from auth.users where email = 'SONS-EMAIL';
 
 **Project Settings → API** (or **Data API**). Note:
 
-- **Project URL**, like `https://abcdxyz.supabase.co`
-- **anon public** key, a long string starting with `eyJ...`
+- **Project URL**, like `https://abcdxyz.supabase.co`. Not the "RESTful endpoint" ending in `/rest/v1`
+- **Publishable** key (`sb_publishable_...`) or the legacy **anon public** key (`eyJ...`). Either works
 
 The anon key is meant to be public: the security rules from step 2 protect the data.
 Never use the `service_role` key in this app.
