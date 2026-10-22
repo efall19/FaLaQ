@@ -21,6 +21,7 @@ export interface Assignment {
   position: number;
   created_at: string;
   source?: 'manual' | 'auto';
+  crystals?: number;
 }
 
 export interface Memorized {

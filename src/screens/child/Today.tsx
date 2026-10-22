@@ -6,17 +6,16 @@ import { AudioPlayer, CenterMessage, Spinner, StatusBadge, TaskTag } from '../..
 import {
   IconBook,
   IconFlame,
+  IconGem,
   IconHeadphones,
-  IconLogout,
   IconMic,
   IconPlus,
   IconRepeat,
   IconStar,
-  IconTodayCheck,
   IconWifiOff,
-  Logo,
   Medallion,
 } from '../../components/Icons';
+import { Rail, type ChildTab } from './Rail';
 import { useSignedUrl } from '../../lib/useSignedUrl';
 
 const SEG: Record<string, string> = { todo: '#D5DDD6', submitted: '#7FA0CF', redo: '#E3A26B', approved: '#1E6B4A' };
@@ -30,6 +29,7 @@ export function Today({
   onRetry,
   onOpen,
   onSignOut,
+  onTab,
 }: {
   profile: Profile;
   day: ChildDay | null;
@@ -39,6 +39,7 @@ export function Today({
   onRetry: () => void;
   onOpen: (id: string, mode: 'listen' | 'record') => void;
   onSignOut: () => void;
+  onTab: (t: ChildTab) => void;
 }) {
   const list = day?.assignments ?? [];
   const revision = list.filter((a) => a.kind === 'revision');
@@ -47,20 +48,7 @@ export function Today({
 
   return (
     <div className="child-shell">
-      <nav className="rail" aria-label="Main">
-        <Logo />
-        <a className="rail-item active" aria-current="page" href="#">
-          <IconTodayCheck size={28} />
-          Today
-        </a>
-        <div className="rail-spacer" />
-        <button className="rail-item" type="button" onClick={onSignOut} aria-label="Switch user">
-          <span className="avatar">{profile.display_name.slice(0, 1).toUpperCase()}</span>
-          <span className="rail-small">
-            <IconLogout size={14} /> Switch
-          </span>
-        </button>
-      </nav>
+      <Rail profile={profile} active="today" onTab={onTab} onSignOut={onSignOut} />
 
       <main className="child-main">
         <header className="child-header">
@@ -88,6 +76,11 @@ export function Today({
             <strong>{day?.stars ?? '–'}</strong>
             <span className="muted">{day?.stars === 1 ? 'star' : 'stars'}</span>
           </div>
+          <button type="button" className="chip-stat chip-btn" onClick={() => onTab('ship')} aria-label="Crystals: open my spaceship">
+            <IconGem size={24} />
+            <strong>{day?.wallet?.balance ?? '–'}</strong>
+            <span className="muted">crystals</span>
+          </button>
           <div className="chip-stat">
             <span style={{ color: '#B5541B', display: 'flex' }}>
               <IconFlame size={24} />

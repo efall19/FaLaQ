@@ -241,3 +241,23 @@ export function Logo({ size = 48 }: { size?: number }) {
     </span>
   );
 }
+
+export const IconRocket = (p: P) => (
+  <Svg {...p}>
+    <path d="M12 2.5c3 2 4.5 5.2 4.5 9.2V16h-9v-4.3c0-4 1.5-7.2 4.5-9.2z" />
+    <circle cx="12" cy="9.5" r="1.8" />
+    <path d="M7.5 13l-3 3.5V19l3-1.5M16.5 13l3 3.5V19l-3-1.5" />
+    <path d="M10 18.5c.5 1.5 1.2 2.5 2 3 .8-.5 1.5-1.5 2-3" />
+  </Svg>
+);
+
+/** A crystal: the spending money for the spaceship (colored, not a stroke icon). */
+export function IconGem({ size = 22 }: { size?: number }) {
+  return (
+    <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24">
+      <path d="M7 3.5h10l4 5-9 12.5-9-12.5z" fill="#5EC8F2" stroke="#2F6FB3" strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M3 8.5h18M9.5 3.5 8 8.5l4 12.5 4-12.5-1.5-5" fill="none" stroke="#2F6FB3" strokeWidth="1.2" strokeLinejoin="round" />
+      <path d="M8.2 5.2 7 7.6" stroke="#FFFFFF" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+}

@@ -1,6 +1,6 @@
 import type { Assignment, Profile, RecordingWithAssignment } from '../../lib/types';
 import type { Chapter } from '../../lib/quran';
-import { countStars, ensurePlan, fetchAssignments, fetchPending, fetchRecentlyReviewed, fetchStreak } from '../../lib/data';
+import { countStars, ensurePlan, fetchAssignments, fetchPending, fetchRecentlyReviewed, fetchStreak, fetchWallet } from '../../lib/data';
 import { clock, fmtSec, greeting, isoDate, shortDate } from '../../lib/dates';
 import { usePolling } from '../../lib/usePolling';
 import { StatusBadge, TaskTag } from '../../components/Bits';
@@ -11,20 +11,22 @@ interface DashData {
   today: Assignment[];
   recent: RecordingWithAssignment[];
   stars: number;
+  crystals: number | null;
   streak: number;
 }
 
 async function loadDash(childId: string): Promise<DashData> {
   const d = isoDate();
   await ensurePlan(childId, d).catch(() => undefined);
-  const [pending, today, recent, stars, streak] = await Promise.all([
+  const [pending, today, recent, stars, streak, wallet] = await Promise.all([
     fetchPending(childId),
     fetchAssignments(childId, d, d),
     fetchRecentlyReviewed(childId, 6),
     countStars(childId),
     fetchStreak(childId),
+    fetchWallet(childId, d).catch(() => null),
   ]);
-  return { pending, today, recent, stars, streak };
+  return { pending, today, recent, stars, streak, crystals: wallet?.balance ?? null };
 }
 
 export function Dashboard({
@@ -84,7 +86,7 @@ export function Dashboard({
         </div>
         <div className="tile">
           <strong>{data?.stars ?? '–'}</strong>
-          <span>Stars</span>
+          <span>Stars{data?.crystals != null ? ` · ${data.crystals} crystals` : ''}</span>
         </div>
       </div>
 

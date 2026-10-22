@@ -6,6 +6,7 @@ import { clock, fmtSec, shortDate } from '../../lib/dates';
 import { useSignedUrl } from '../../lib/useSignedUrl';
 import { useVerses } from '../../lib/useVerses';
 import { extensionFor, useRecorder } from '../../lib/useRecorder';
+import { CRYSTALS_BY_ATTEMPT } from '../../lib/ship';
 import { AudioPlayer, CenterMessage, Spinner } from '../../components/Bits';
 import { QuranText } from '../../components/QuranText';
 import { IconBack, IconCheck, IconMic, IconRedo, IconStop, IconX } from '../../components/Icons';
@@ -123,7 +124,7 @@ function ReviewBody({
       await reviewRecording(rec.id, approve, comment, notePath, noteDur);
       onDone(
         approve
-          ? `Approved. ${child.display_name} earned a star.`
+          ? `Approved. ${child.display_name} earned a star and ${CRYSTALS_BY_ATTEMPT(rec.attempt)} crystals (attempt ${rec.attempt}).`
           : `Sent back for a redo. ${child.display_name} will see your note on the card.`,
       );
     } catch (e: any) {

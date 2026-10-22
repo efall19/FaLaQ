@@ -49,6 +49,10 @@ Same place: **SQL Editor** → **New query** → paste everything from
 [`supabase/002_auto_revision.sql`](supabase/002_auto_revision.sql) → **Run**.
 (Already set up before this file existed? Just run this one. It doesn't touch your existing data.)
 
+### 2c. Add crystals and the spaceship (third SQL file)
+
+Same place again: paste everything from [`supabase/003_spaceship.sql`](supabase/003_spaceship.sql) → **Run**.
+
 ### 3. Create the two logins
 
 1. **Authentication** → **Users** → **Add user** → **Create new user**.
@@ -111,6 +115,16 @@ Allow the microphone the first time your son records, and the first time you rec
    extra revision you want by hand.
 
 Tasks appear on the tablet within about 20 seconds, or straight away when the app is reopened.
+
+### Stars, crystals and the spaceship
+
+- **Stars**: 1 per approved task. A lifetime count that never goes down.
+- **Crystals**: spending money. 3 for an approval on the first attempt, 2 on the second, 1 after that,
+  plus 5 when every task of a day is approved.
+- **My ship** (on the tablet): your son spends crystals on spaceship parts (paint, nose, window, wings,
+  engine, decals, companion, trail, space scene). He can try parts on before buying, and swap between parts he owns.
+- Prices live in `src/lib/ship.ts`. After changing them, run `node scripts/gen-shop-sql.mjs` and update the
+  catalog in the database with its output.
 
 ### How automatic revision works
 

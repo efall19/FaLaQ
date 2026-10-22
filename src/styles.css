@@ -424,6 +424,56 @@ button.ayah:hover { background: #f7f3e6; }
 .login-card p { margin: 0; }
 .brand { font-size: 22px; font-weight: 600; }
 
+/* ── spaceship & crystals ──────────────────────────────── */
+.chip-btn { cursor: pointer; font: inherit; color: inherit; }
+.chip-stat.wallet { background: #eaf6fb; border-color: #b9dcea; }
+.ship-main { gap: 18px; }
+.ship-layout { display: flex; gap: 22px; align-items: flex-start; flex-wrap: wrap; }
+.ship-stage {
+  position: relative; flex: 0 0 auto; width: 440px; max-width: 100%; aspect-ratio: 1; border-radius: 28px; overflow: hidden;
+  background: #14213d; display: flex; align-items: center; justify-content: center;
+}
+.ship-stage .ship-svg { width: 100%; height: 100%; }
+.trying-on {
+  position: absolute; left: 14px; top: 14px; background: rgba(255, 255, 255, .92); color: var(--ink);
+  border-radius: 999px; padding: 6px 12px; font-size: 14px; font-weight: 600;
+}
+.shop { flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+.slot-tabs button { height: 44px; padding: 0 14px; font-size: 15px; }
+.shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 12px; }
+.shop-tile {
+  border: 2px solid var(--line); background: #fff; border-radius: 20px; padding: 8px 8px 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--ink); text-align: center;
+}
+.shop-tile .ship-svg { border-radius: 14px; width: 100%; height: auto; }
+.shop-tile.selected { border-color: var(--ink); box-shadow: 0 0 0 3px #c9dcf0; }
+.shop-tile.fitted { border-color: #a8d2b8; }
+.shop-tile.locked .ship-svg { opacity: .6; }
+.tile-name { font-size: 14px; font-weight: 600; line-height: 1.2; }
+.tile-price { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; color: #2f6fb3; }
+.shop-tile.fitted .tile-price { color: var(--green); }
+.shop-tile.owned .tile-price { color: var(--ink-2); }
+.shop-tile.locked .tile-price { color: var(--ink-2); }
+.shop-action {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: #fff; border: 1px solid var(--line);
+  border-radius: 20px; padding: 12px 14px; min-height: 76px; font-size: 16px;
+}
+.btn-gem { background: #2f6fb3; color: #fff; }
+.ship-float { animation: shipFloat 4s ease-in-out infinite; }
+@keyframes shipFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.flame { animation: flicker .35s ease-in-out infinite alternate; transform-origin: 200px 316px; }
+@keyframes flicker { from { transform: scaleY(.9); } to { transform: scaleY(1.06); } }
+.orbit { animation: orbitBob 5s ease-in-out infinite; }
+@keyframes orbitBob { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-6px, 6px); } }
+.blink { animation: blink 1.4s steps(2) infinite; }
+@keyframes blink { 50% { opacity: .2; } }
+.beacon-glow { animation: glow 2.2s ease-in-out infinite; transform-origin: 200px 80px; }
+@keyframes glow { 50% { opacity: .45; } }
+@media (max-width: 860px) {
+  .ship-layout { justify-content: center; }
+  .ship-stage { width: min(100%, 460px); }
+}
+
 /* ── automatic revision tasks: plum accent ─────────────── */
 .badge-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .tag {

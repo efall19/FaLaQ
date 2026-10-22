@@ -252,3 +252,44 @@ export async function rebuildPlan(childId: string, restart: boolean, today = iso
   });
   if (res.error) throw new Error(res.error.message);
 }
+
+// ── crystals & spaceship ────────────────────────────────────
+export interface Wallet {
+  earned: number;
+  day_bonus: number;
+  spent: number;
+  balance: number;
+  today_earned: number;
+  today_complete: boolean;
+}
+
+export async function fetchWallet(childId: string, today = isoDate()): Promise<Wallet | null> {
+  const res = await supabase.rpc('crystal_balance', { p_child: childId, p_today: today });
+  if (res.error) throw new Error(res.error.message);
+  const rows = res.data as Wallet[] | null;
+  return rows?.[0] ?? null;
+}
+
+export async function fetchShipState(childId: string): Promise<{ equipped: Record<string, string | null>; owned: string[] }> {
+  const [ship, bought] = await Promise.all([
+    supabase.from('ships').select('equipped').eq('child_id', childId).maybeSingle(),
+    supabase.from('purchases').select('item_id').eq('child_id', childId),
+  ]);
+  if (ship.error) throw new Error(ship.error.message);
+  if (bought.error) throw new Error(bought.error.message);
+  return {
+    equipped: ((ship.data as { equipped: Record<string, string | null> } | null)?.equipped ?? {}) as Record<string, string | null>,
+    owned: ((bought.data ?? []) as { item_id: string }[]).map((r) => r.item_id),
+  };
+}
+
+export async function buyItem(itemId: string): Promise<number> {
+  const res = await supabase.rpc('buy_item', { p_item: itemId });
+  if (res.error) throw new Error(res.error.message);
+  return res.data as number;
+}
+
+export async function equipItem(slot: string, itemId: string | null) {
+  const res = await supabase.rpc('equip_item', { p_slot: slot, p_item: itemId });
+  if (res.error) throw new Error(res.error.message);
+}
