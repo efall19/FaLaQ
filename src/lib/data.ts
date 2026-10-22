@@ -293,3 +293,43 @@ export async function equipItem(slot: string, itemId: string | null) {
   const res = await supabase.rpc('equip_item', { p_slot: slot, p_item: itemId });
   if (res.error) throw new Error(res.error.message);
 }
+
+// ── keeping milestone recordings & cleaning up old audio ────
+export async function setKeep(recordingId: string, keep: boolean) {
+  const res = await supabase.from('recordings').update({ keep }).eq('id', recordingId);
+  if (res.error) throw new Error(res.error.message);
+}
+
+/** Kept recordings (newest first), with their task, for the Surahs screen. */
+export async function fetchKeptRecordings(childId: string): Promise<RecordingWithAssignment[]> {
+  const res = await supabase
+    .from('recordings')
+    .select('*, assignment:assignments(*)')
+    .eq('child_id', childId)
+    .eq('keep', true)
+    .order('created_at', { ascending: false });
+  return check(res) as RecordingWithAssignment[];
+}
+
+/**
+ * Removes audio that is no longer needed: reviewed recordings and voice notes
+ * from tasks more than a day old, except kept recordings. Parent only.
+ * Returns how many files were removed.
+ */
+export async function runCleanup(today = isoDate()): Promise<number> {
+  const res = await supabase.rpc('cleanup_candidates', { p_today: today });
+  if (res.error) throw new Error(res.error.message);
+  const rows = (res.data ?? []) as { recording_id: string; kind: 'audio' | 'note'; path: string }[];
+  if (!rows.length) return 0;
+  for (let i = 0; i < rows.length; i += 100) {
+    const batch = rows.slice(i, i + 100);
+    const rm = await supabase.storage.from('audio').remove(batch.map((r) => r.path));
+    if (rm.error) throw new Error(rm.error.message);
+  }
+  const mark = await supabase.rpc('mark_files_removed', {
+    p_audio: rows.filter((r) => r.kind === 'audio').map((r) => r.recording_id),
+    p_notes: rows.filter((r) => r.kind === 'note').map((r) => r.recording_id),
+  });
+  if (mark.error) throw new Error(mark.error.message);
+  return rows.length;
+}

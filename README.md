@@ -53,6 +53,10 @@ Same place: **SQL Editor** → **New query** → paste everything from
 
 Same place again: paste everything from [`supabase/003_spaceship.sql`](supabase/003_spaceship.sql) → **Run**.
 
+### 2d. Automatic clean-up of old audio (fourth SQL file)
+
+Paste everything from [`supabase/004_cleanup.sql`](supabase/004_cleanup.sql) → **Run**.
+
 ### 3. Create the two logins
 
 1. **Authentication** → **Users** → **Add user** → **Create new user**.
@@ -125,6 +129,16 @@ Tasks appear on the tablet within about 20 seconds, or straight away when the ap
   engine, decals, companion, trail, space scene). He can try parts on before buying, and swap between parts he owns.
 - Prices live in `src/lib/ship.ts`. After changing them, run `node scripts/gen-shop-sql.mjs` and update the
   catalog in the database with its output.
+
+### What is kept, and for how long
+
+- Recordings and voice notes are removed automatically once their task's day is more than a day old
+  (today's and yesterday's always stay). The parent's app does this when it opens.
+- Recordings still waiting for review are never removed.
+- **Kept recordings stay forever.** When you approve a whole surah that isn't known yet, the review screen offers
+  "Add to known surahs" and "Keep this recording" (both ticked). You can tick "Keep" on any approval.
+  Kept recordings can be played from the Surahs tab.
+- Approvals, stars, crystals and history are never removed. Only audio files are.
 
 ### How automatic revision works
 

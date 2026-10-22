@@ -1,7 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import type { Profile, RecordingWithAssignment } from '../../lib/types';
 import type { Chapter } from '../../lib/quran';
-import { fetchRecording, reviewRecording, uploadAudio } from '../../lib/data';
+import { fetchMemorized, fetchRecording, rebuildPlan, reviewRecording, saveMemorized, setKeep, uploadAudio } from '../../lib/data';
+import { weightFor } from '../../lib/quran';
 import { clock, fmtSec, shortDate } from '../../lib/dates';
 import { useSignedUrl } from '../../lib/useSignedUrl';
 import { useVerses } from '../../lib/useVerses';
@@ -110,6 +111,32 @@ function ReviewBody({
   const [error, setError] = useState('');
   const alreadyReviewed = rec.review !== 'pending';
 
+  // A whole surah that isn't in the known list yet: offer to add it and keep this recording.
+  const wholeSurah = !!chapter && a.verse_from === 1 && a.verse_to >= chapter.verses;
+  const [knownFully, setKnownFully] = useState<boolean | null>(null);
+  const [keep, setKeepChoice] = useState(false);
+  const [addKnown, setAddKnown] = useState(false);
+  useEffect(() => {
+    if (!wholeSurah || !chapter) {
+      setKnownFully(null);
+      return;
+    }
+    let alive = true;
+    fetchMemorized(child.id)
+      .then((list) => {
+        if (!alive) return;
+        const m = list.find((x) => x.surah === a.surah);
+        const known = !!m && m.verse_from === 1 && m.verse_to >= chapter.verses;
+        setKnownFully(known);
+        setAddKnown(!known);
+        setKeepChoice(!known);
+      })
+      .catch(() => alive && setKnownFully(null));
+    return () => {
+      alive = false;
+    };
+  }, [wholeSurah, chapter, child.id, a.surah]);
+
   const decide = async (approve: boolean) => {
     setBusy(approve ? 'approve' : 'reject');
     setError('');
@@ -122,9 +149,20 @@ function ReviewBody({
         noteDur = note.seconds;
       }
       await reviewRecording(rec.id, approve, comment, notePath, noteDur);
+      const extras: string[] = [];
+      if (approve && keep) {
+        await setKeep(rec.id, true);
+        extras.push('recording kept');
+      }
+      if (approve && addKnown && wholeSurah && chapter && knownFully === false) {
+        const weight = await weightFor(a.surah, 1, chapter.verses);
+        await saveMemorized([{ child_id: child.id, surah: a.surah, verse_from: 1, verse_to: chapter.verses, weight }]);
+        await rebuildPlan(child.id, false).catch(() => undefined);
+        extras.push(`${chapter.name} added to known surahs`);
+      }
       onDone(
         approve
-          ? `Approved. ${child.display_name} earned a star and ${CRYSTALS_BY_ATTEMPT(rec.attempt)} crystals (attempt ${rec.attempt}).`
+          ? `Approved. ${child.display_name} earned a star and ${CRYSTALS_BY_ATTEMPT(rec.attempt)} crystals (attempt ${rec.attempt})${extras.length ? `; ${extras.join(', ')}` : ''}.`
           : `Sent back for a redo. ${child.display_name} will see your note on the card.`,
       );
     } catch (e: any) {
@@ -205,6 +243,26 @@ function ReviewBody({
                   The microphone isn't available. Allow it for this site in your phone's settings, or write a comment instead.
                 </div>
               )}
+            </div>
+
+            <div className="box col gap">
+              <strong>If you approve</strong>
+              {wholeSurah && knownFully === false && chapter && (
+                <label className="check">
+                  <input type="checkbox" checked={addKnown} onChange={(e) => setAddKnown(e.target.checked)} />
+                  <span>
+                    Add {chapter.name} to {child.display_name}'s known surahs
+                    <span className="muted small"> · it joins the revision plan</span>
+                  </span>
+                </label>
+              )}
+              <label className="check">
+                <input type="checkbox" checked={keep} onChange={(e) => setKeepChoice(e.target.checked)} />
+                <span>
+                  Keep this recording
+                  <span className="muted small"> · other recordings are removed after a day or two</span>
+                </span>
+              </label>
             </div>
 
             <label className="field">

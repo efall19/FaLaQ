@@ -61,6 +61,9 @@ export interface Recording {
   note_duration_sec: number | null;
   reviewed_at: string | null;
   created_at: string;
+  keep?: boolean;
+  audio_removed_at?: string | null;
+  note_removed_at?: string | null;
 }
 
 export interface RecordingWithAssignment extends Recording {

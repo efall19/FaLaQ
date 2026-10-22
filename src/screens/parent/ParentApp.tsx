@@ -1,6 +1,7 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { Profile } from '../../lib/types';
-import { fetchChildren } from '../../lib/data';
+import { fetchChildren, runCleanup } from '../../lib/data';
+import { isoDate } from '../../lib/dates';
 import { usePolling } from '../../lib/usePolling';
 import { useChapters } from '../../lib/useVerses';
 import { CenterMessage, Spinner, Toast } from '../../components/Bits';
@@ -15,6 +16,28 @@ type View = { name: 'home' } | { name: 'review'; id: string } | { name: 'plan' }
 export function ParentApp({ profile, onSignOut }: { profile: Profile; onSignOut: () => void }) {
   const [view, setView] = useState<View>({ name: 'home' });
   const kids = usePolling(fetchChildren, [], 5 * 60 * 1000);
+
+  // Once a day, quietly remove audio that is no longer needed (see supabase/004_cleanup.sql).
+  useEffect(() => {
+    const today = isoDate();
+    const key = 'falaq.cleanup.lastRun';
+    let last: string | null = null;
+    try {
+      last = localStorage.getItem(key);
+    } catch {
+      /* ignore */
+    }
+    if (last === today) return;
+    runCleanup(today)
+      .then(() => {
+        try {
+          localStorage.setItem(key, today);
+        } catch {
+          /* ignore */
+        }
+      })
+      .catch(() => undefined); // try again next time the app opens
+  }, []);
   const { chapters, error: chaptersError, retry: retryChapters } = useChapters();
   const [toast, setToast] = useState<string | null>(null);
   const endToast = useCallback(() => setToast(null), []);

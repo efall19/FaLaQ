@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { Memorized, Profile } from '../../lib/types';
+import type { Memorized, Profile, RecordingWithAssignment } from '../../lib/types';
 import type { Chapter } from '../../lib/quran';
 import { SURAH_GROUPS, weightFor } from '../../lib/quran';
-import { fetchMemorized, rebuildPlan, removeMemorized, saveMemorized } from '../../lib/data';
+import { fetchKeptRecordings, fetchMemorized, rebuildPlan, removeMemorized, saveMemorized } from '../../lib/data';
+import { shortDate } from '../../lib/dates';
+import { useSignedUrl } from '../../lib/useSignedUrl';
 import { usePolling } from '../../lib/usePolling';
-import { Spinner } from '../../components/Bits';
+import { AudioPlayer, Spinner } from '../../components/Bits';
 import { IconCheck, IconPlus } from '../../components/Icons';
 
 type Status = 'none' | 'partial' | 'full';
@@ -27,6 +29,12 @@ export function Surahs({
 }) {
   const known = usePolling(() => fetchMemorized(child.id), [child.id], 5 * 60 * 1000);
   const byId = useMemo(() => new Map((known.data ?? []).map((m) => [m.surah, m])), [known.data]);
+  const kept = usePolling(() => fetchKeptRecordings(child.id), [child.id], 5 * 60 * 1000);
+  const keptBySurah = useMemo(() => {
+    const m = new Map<number, RecordingWithAssignment>();
+    for (const r of kept.data ?? []) if (!m.has(r.assignment.surah)) m.set(r.assignment.surah, r); // newest first
+    return m;
+  }, [kept.data]);
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState<number | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -146,6 +154,7 @@ export function Surahs({
                   key={c.id}
                   chapter={c}
                   mem={byId.get(c.id)}
+                  kept={keptBySurah.get(c.id)}
                   open={open === c.id}
                   busy={busy === `s${c.id}`}
                   disabled={busy !== null}
@@ -173,6 +182,7 @@ export function Surahs({
 function SurahRow({
   chapter: c,
   mem,
+  kept,
   open,
   busy,
   disabled,
@@ -182,6 +192,7 @@ function SurahRow({
 }: {
   chapter: Chapter;
   mem?: Memorized;
+  kept?: RecordingWithAssignment;
   open: boolean;
   busy: boolean;
   disabled: boolean;
@@ -211,6 +222,7 @@ function SurahRow({
             <span className="muted small">
               {c.verses} verses
               {current === 'partial' && mem ? ` · knows ${mem.verse_from}–${mem.verse_to}` : ''}
+              {kept ? ' · recording kept' : ''}
             </span>
           </span>
           <span className="ar-small" lang="ar" dir="rtl">
@@ -237,6 +249,7 @@ function SurahRow({
       </div>
       {open && (
         <div className="surah-edit">
+          {kept && <KeptPlayer rec={kept} />}
           <div className="segmented full" role="radiogroup" aria-label={`${c.name} status`}>
             {(['none', 'partial', 'full'] as Status[]).map((s) => (
               <button key={s} type="button" role="radio" aria-checked={status === s} className={status === s ? 'on' : ''} onClick={() => setStatus(s)}>
@@ -267,5 +280,18 @@ function SurahRow({
         </div>
       )}
     </div>
+  );
+}
+
+function KeptPlayer({ rec }: { rec: RecordingWithAssignment }) {
+  const { url, error } = useSignedUrl(rec.audio_path);
+  return (
+    <AudioPlayer
+      src={url}
+      path={rec.audio_path}
+      loadError={error}
+      fallbackDuration={rec.duration_sec}
+      label={`Kept recording · ${shortDate(rec.assignment.due_date)}`}
+    />
   );
 }
