@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Status } from '../lib/types';
-import { IconCheck, IconCircle, IconClock, IconPause, IconPlay, IconRedo } from './Icons';
+import { IconCheck, IconCircle, IconClock, IconPause, IconPlay, IconRedo, IconRepeat } from './Icons';
 import { fmtSec } from '../lib/dates';
 
 const CHILD_LABEL: Record<Status, string> = {
@@ -109,6 +109,16 @@ export function AudioPlayer({
       </div>
       <span className="player-time">{playing || pos ? fmtSec(pos) : fmtSec(total)}</span>
     </div>
+  );
+}
+
+/** Marks a task created by the automatic revision plan. */
+export function PlanTag({ small = false }: { small?: boolean }) {
+  return (
+    <span className={`tag-plan${small ? ' tag-plan-sm' : ''}`}>
+      <IconRepeat size={small ? 12 : 14} />
+      Revision plan
+    </span>
   );
 }
 

@@ -424,6 +424,18 @@ button.ayah:hover { background: #f7f3e6; }
 .login-card p { margin: 0; }
 .brand { font-size: 22px; font-weight: 600; }
 
+/* ── automatic revision tasks: plum accent ─────────────── */
+.badge-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.tag-plan {
+  display: inline-flex; align-items: center; gap: 5px; height: 32px; padding: 0 12px; border-radius: 999px;
+  background: #eae3f4; color: #5a3e8a; font-size: 14px; font-weight: 600; white-space: nowrap;
+}
+.tag-plan-sm { height: 22px; padding: 0 8px; font-size: 12px; align-self: flex-start; margin-top: 2px; }
+.card-auto { background: #fcfbfe; }
+.card-auto.card-todo { border-color: #c9b8e3; }
+.ar-name.plum { color: #5a3e8a; }
+.preview .mini-chip { background: #eae3f4; color: #5a3e8a; }
+
 /* ── surahs & automatic revision ─────────────────────────── */
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .strong { font-weight: 600; }

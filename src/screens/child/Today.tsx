@@ -2,7 +2,7 @@ import type { Assignment, Profile, Recording } from '../../lib/types';
 import type { Chapter } from '../../lib/quran';
 import type { ChildDay } from './ChildApp';
 import { isoDate, longDate } from '../../lib/dates';
-import { AudioPlayer, CenterMessage, Spinner, StatusBadge } from '../../components/Bits';
+import { AudioPlayer, CenterMessage, PlanTag, Spinner, StatusBadge } from '../../components/Bits';
 import {
   IconBook,
   IconFlame,
@@ -184,21 +184,25 @@ function SurahCard({
   onOpen: (id: string, mode: 'listen' | 'record') => void;
 }) {
   const memo = a.kind === 'memorization';
+  const auto = a.source === 'auto';
   return (
-    <article className={`card card-${a.status}${memo ? ' card-memo' : ''}`}>
+    <article className={`card card-${a.status}${memo ? ' card-memo' : ''}${auto ? ' card-auto' : ''}`}>
       <div className="card-head">
-        <Medallion n={a.surah} tone={memo ? 'gold' : 'teal'} />
+        <Medallion n={a.surah} tone={memo ? 'gold' : auto ? 'plum' : 'teal'} />
         <div className="grow">
           <div className="card-name">{chapter?.name ?? `Surah ${a.surah}`}</div>
           <div className="muted small">{rangeLabel(a, chapter)}</div>
         </div>
         {chapter && (
-          <div className={`ar-name${memo ? ' gold' : ''}`} lang="ar" dir="rtl">
+          <div className={`ar-name${memo ? ' gold' : auto ? ' plum' : ''}`} lang="ar" dir="rtl">
             {chapter.arabic}
           </div>
         )}
       </div>
-      <StatusBadge status={a.status} />
+      <div className="badge-row">
+        <StatusBadge status={a.status} />
+        {auto && <PlanTag />}
+      </div>
       {a.status === 'redo' && latest && <TeacherNote rec={latest} />}
       <div className="card-actions">
         <button type="button" className="btn btn-outline" onClick={() => onOpen(a.id, 'listen')}>

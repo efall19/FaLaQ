@@ -214,9 +214,9 @@ export const IconCopy = (p: P) => (
 );
 
 /** The eight-point star medallion with a number inside. */
-export function Medallion({ n, tone = 'teal', size = 50 }: { n: number | string; tone?: 'teal' | 'gold'; size?: number }) {
-  const fill = tone === 'gold' ? '#F2E6CF' : '#DCEBE5';
-  const fg = tone === 'gold' ? '#6B4A12' : '#1E5E54';
+export function Medallion({ n, tone = 'teal', size = 50 }: { n: number | string; tone?: 'teal' | 'gold' | 'plum'; size?: number }) {
+  const fill = tone === 'gold' ? '#F2E6CF' : tone === 'plum' ? '#EAE3F4' : '#DCEBE5';
+  const fg = tone === 'gold' ? '#6B4A12' : tone === 'plum' ? '#5A3E8A' : '#1E5E54';
   return (
     <span className="medallion" style={{ width: size, height: size }}>
       <svg aria-hidden="true" width={size} height={size} viewBox="0 0 50 50">
