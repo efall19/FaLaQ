@@ -4,7 +4,7 @@ import type { Chapter } from '../../lib/quran';
 import { addAssignment, deleteAssignment, fetchAssignments } from '../../lib/data';
 import { addDays, isoDate, longDate, shortDate } from '../../lib/dates';
 import { usePolling } from '../../lib/usePolling';
-import { PlanTag, Spinner, StatusBadge } from '../../components/Bits';
+import { Spinner, StatusBadge, TaskTag } from '../../components/Bits';
 import { IconBack, IconCopy, IconForward, IconPlus, IconTrash } from '../../components/Icons';
 import { AutoRevision } from './AutoRevision';
 
@@ -147,11 +147,7 @@ export function Plan({
                 <strong>
                   {name(a.surah)} {a.verse_from}–{a.verse_to}
                 </strong>
-                {a.source === 'auto' ? (
-                  <PlanTag small />
-                ) : (
-                  <span className="muted small">{a.kind === 'memorization' ? 'New memorization' : 'Revision'}</span>
-                )}
+                <TaskTag task={a} small />
               </span>
               <StatusBadge status={a.status} who="parent" small />
               {confirmDelete === a.id ? (

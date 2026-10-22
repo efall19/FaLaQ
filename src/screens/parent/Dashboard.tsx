@@ -3,7 +3,7 @@ import type { Chapter } from '../../lib/quran';
 import { countStars, ensurePlan, fetchAssignments, fetchPending, fetchRecentlyReviewed, fetchStreak } from '../../lib/data';
 import { clock, fmtSec, greeting, isoDate, shortDate } from '../../lib/dates';
 import { usePolling } from '../../lib/usePolling';
-import { PlanTag, StatusBadge } from '../../components/Bits';
+import { StatusBadge, TaskTag } from '../../components/Bits';
 import { IconForward, IconMic, IconPlus, IconWifiOff } from '../../components/Icons';
 
 interface DashData {
@@ -133,11 +133,7 @@ export function Dashboard({
                 <strong>
                   {name(a.surah)} {range(a)}
                 </strong>
-                {a.source === 'auto' ? (
-                  <PlanTag small />
-                ) : (
-                  <span className="muted small">{a.kind === 'memorization' ? 'New memorization' : 'Revision'}</span>
-                )}
+                <TaskTag task={a} small />
               </span>
               <StatusBadge status={a.status} who="parent" small />
             </div>

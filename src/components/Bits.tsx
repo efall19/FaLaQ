@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import type { Status } from '../lib/types';
-import { IconCheck, IconCircle, IconClock, IconPause, IconPlay, IconRedo, IconRepeat } from './Icons';
+import type { Assignment, Status } from '../lib/types';
+import { IconCheck, IconCircle, IconClock, IconPause, IconPlay, IconPlus, IconRedo, IconRepeat } from './Icons';
 import { fmtSec } from '../lib/dates';
 
 const CHILD_LABEL: Record<Status, string> = {
@@ -112,12 +112,18 @@ export function AudioPlayer({
   );
 }
 
-/** Marks a task created by the automatic revision plan. */
-export function PlanTag({ small = false }: { small?: boolean }) {
+/**
+ * Label for the type of task: automatic revision plan (plum),
+ * revision added by hand (teal), or new memorization (gold).
+ */
+export function TaskTag({ task, small = false }: { task: Pick<Assignment, 'kind' | 'source'>; small?: boolean }) {
+  const type = task.kind === 'memorization' ? 'memo' : task.source === 'auto' ? 'plan' : 'revision';
+  const label = type === 'memo' ? 'Memorization' : type === 'plan' ? 'Revision plan' : 'Revision';
+  const Icon = type === 'memo' ? IconPlus : IconRepeat;
   return (
-    <span className={`tag-plan${small ? ' tag-plan-sm' : ''}`}>
-      <IconRepeat size={small ? 12 : 14} />
-      Revision plan
+    <span className={`tag tag-${type}${small ? ' tag-sm' : ''}`}>
+      <Icon size={small ? 12 : 14} />
+      {label}
     </span>
   );
 }

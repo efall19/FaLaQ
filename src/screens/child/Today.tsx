@@ -2,7 +2,7 @@ import type { Assignment, Profile, Recording } from '../../lib/types';
 import type { Chapter } from '../../lib/quran';
 import type { ChildDay } from './ChildApp';
 import { isoDate, longDate } from '../../lib/dates';
-import { AudioPlayer, CenterMessage, PlanTag, Spinner, StatusBadge } from '../../components/Bits';
+import { AudioPlayer, CenterMessage, Spinner, StatusBadge, TaskTag } from '../../components/Bits';
 import {
   IconBook,
   IconFlame,
@@ -201,7 +201,7 @@ function SurahCard({
       </div>
       <div className="badge-row">
         <StatusBadge status={a.status} />
-        {auto && <PlanTag />}
+        <TaskTag task={a} />
       </div>
       {a.status === 'redo' && latest && <TeacherNote rec={latest} />}
       <div className="card-actions">
