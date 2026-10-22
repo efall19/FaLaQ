@@ -59,7 +59,6 @@ create or replace function public.revision_units_raw(p_child uuid, p_cycle int)
 returns table (bucket int, surah int, verse_from int, verse_to int, ord int)
 language plpgsql
 stable
-security definer
 set search_path = public
 as $$
 declare
@@ -116,7 +115,6 @@ create or replace function public.revision_units(p_child uuid, p_cycle int)
 returns table (bucket int, surah int, verse_from int, verse_to int, ord int)
 language sql
 stable
-security definer
 set search_path = public
 as $$
   select (dense_rank() over (order by r.bucket) - 1)::int, r.surah, r.verse_from, r.verse_to, r.ord
