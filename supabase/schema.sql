@@ -187,3 +187,6 @@ create policy "audio: read" on storage.objects
       or (storage.foldername(name))[1] in (select id::text from public.profiles where role = 'parent')
     )
   );
+
+-- Tell the API about the new tables right away.
+notify pgrst, 'reload schema';

@@ -263,3 +263,6 @@ revoke all on function public.rebuild_revision_plan(uuid, date, boolean, int) fr
 grant execute on function public.revision_schedule(uuid, int, int[], date, date, int) to authenticated;
 grant execute on function public.ensure_revision_plan(uuid, date, int) to authenticated;
 grant execute on function public.rebuild_revision_plan(uuid, date, boolean, int) to authenticated;
+
+-- Tell the API about the new tables right away.
+notify pgrst, 'reload schema';
