@@ -1,5 +1,14 @@
 import { supabase } from './supabase';
-import type { Assignment, Kind, Profile, Recording, RecordingWithAssignment } from './types';
+import type {
+  Assignment,
+  Kind,
+  Memorized,
+  Profile,
+  Recording,
+  RecordingWithAssignment,
+  RevisionSettings,
+  ScheduleRow,
+} from './types';
 import { addDays, isoDate } from './dates';
 
 function check<T>(res: { data: T | null; error: { message: string } | null }): T {
@@ -172,5 +181,74 @@ export async function addAssignment(a: {
 
 export async function deleteAssignment(id: string) {
   const res = await supabase.from('assignments').delete().eq('id', id);
+  if (res.error) throw new Error(res.error.message);
+}
+
+// ── known surahs & automatic revision ───────────────────────
+export async function fetchMemorized(childId: string): Promise<Memorized[]> {
+  const res = await supabase.from('memorized').select('*').eq('child_id', childId).order('surah', { ascending: false });
+  return check(res) as Memorized[];
+}
+
+export async function saveMemorized(rows: Memorized[]) {
+  if (!rows.length) return;
+  const res = await supabase
+    .from('memorized')
+    .upsert(rows.map((r) => ({ ...r, updated_at: new Date().toISOString() })), { onConflict: 'child_id,surah' });
+  if (res.error) throw new Error(res.error.message);
+}
+
+export async function removeMemorized(childId: string, surahs: number[]) {
+  if (!surahs.length) return;
+  const res = await supabase.from('memorized').delete().eq('child_id', childId).in('surah', surahs);
+  if (res.error) throw new Error(res.error.message);
+}
+
+export async function fetchRevisionSettings(childId: string): Promise<RevisionSettings | null> {
+  const res = await supabase.from('revision_settings').select('*').eq('child_id', childId).maybeSingle();
+  return check(res) as RevisionSettings | null;
+}
+
+export async function saveRevisionSettings(s: Omit<RevisionSettings, 'start_date'>, today: string) {
+  const res = await supabase
+    .from('revision_settings')
+    .upsert({ ...s, start_date: today, updated_at: new Date().toISOString() }, { onConflict: 'child_id' });
+  if (res.error) throw new Error(res.error.message);
+}
+
+/** Preview the plan for settings that may not be saved yet. */
+export async function previewSchedule(
+  childId: string,
+  cycle: number,
+  rest: number[],
+  start: string, // the day the cycle began (or would begin)
+  from: string, // first day to show
+  days: number,
+): Promise<ScheduleRow[]> {
+  const res = await supabase.rpc('revision_schedule', {
+    p_child: childId,
+    p_cycle: cycle,
+    p_rest: rest,
+    p_start: start,
+    p_from: from,
+    p_days: days,
+  });
+  return check(res) as ScheduleRow[];
+}
+
+/** Create the automatic revision tasks for the coming days (no-op if already there). */
+export async function ensurePlan(childId: string, today = isoDate(), days = 7) {
+  const res = await supabase.rpc('ensure_revision_plan', { p_child: childId, p_today: today, p_days: days });
+  if (res.error) throw new Error(res.error.message);
+}
+
+/** Recalculate future automatic tasks. restart = the cycle or rest days changed. */
+export async function rebuildPlan(childId: string, restart: boolean, today = isoDate(), days = 7) {
+  const res = await supabase.rpc('rebuild_revision_plan', {
+    p_child: childId,
+    p_today: today,
+    p_restart: restart,
+    p_days: days,
+  });
   if (res.error) throw new Error(res.error.message);
 }

@@ -1,6 +1,6 @@
 import type { Assignment, Profile, RecordingWithAssignment } from '../../lib/types';
 import type { Chapter } from '../../lib/quran';
-import { countStars, fetchAssignments, fetchPending, fetchRecentlyReviewed, fetchStreak } from '../../lib/data';
+import { countStars, ensurePlan, fetchAssignments, fetchPending, fetchRecentlyReviewed, fetchStreak } from '../../lib/data';
 import { clock, fmtSec, greeting, isoDate, shortDate } from '../../lib/dates';
 import { usePolling } from '../../lib/usePolling';
 import { StatusBadge } from '../../components/Bits';
@@ -16,6 +16,7 @@ interface DashData {
 
 async function loadDash(childId: string): Promise<DashData> {
   const d = isoDate();
+  await ensurePlan(childId, d).catch(() => undefined);
   const [pending, today, recent, stars, streak] = await Promise.all([
     fetchPending(childId),
     fetchAssignments(childId, d, d),

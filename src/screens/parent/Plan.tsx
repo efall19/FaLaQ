@@ -6,17 +6,20 @@ import { addDays, isoDate, longDate, shortDate } from '../../lib/dates';
 import { usePolling } from '../../lib/usePolling';
 import { Spinner, StatusBadge } from '../../components/Bits';
 import { IconBack, IconCopy, IconForward, IconPlus, IconTrash } from '../../components/Icons';
+import { AutoRevision } from './AutoRevision';
 
 export function Plan({
   child,
   chapters,
   chaptersError,
   onRetryChapters,
+  onGoSurahs,
 }: {
   child: Profile;
   chapters: Chapter[] | null;
   chaptersError: boolean;
   onRetryChapters: () => void;
+  onGoSurahs: () => void;
 }) {
   const [date, setDate] = useState(isoDate());
   const day = usePolling(() => fetchAssignments(child.id, date, date), [child.id, date], 30000);
@@ -113,6 +116,10 @@ export function Plan({
     <div className="p-page">
       <h1 className="p-title">Plan</h1>
 
+      <AutoRevision child={child} chapters={chapters} onGoSurahs={onGoSurahs} onChanged={day.reload} />
+
+      <h2 className="p-h2">Day by day</h2>
+
       <div className="date-nav">
         <button type="button" className="icon-btn" onClick={() => setDate(addDays(date, -1))} aria-label="Previous day">
           <IconBack size={22} />
@@ -140,7 +147,10 @@ export function Plan({
                 <strong>
                   {name(a.surah)} {a.verse_from}–{a.verse_to}
                 </strong>
-                <span className="muted small">{a.kind === 'memorization' ? 'New memorization' : 'Revision'}</span>
+                <span className="muted small">
+                  {a.kind === 'memorization' ? 'New memorization' : 'Revision'}
+                  {a.source === 'auto' ? ' · automatic' : ''}
+                </span>
               </span>
               <StatusBadge status={a.status} who="parent" small />
               {confirmDelete === a.id ? (

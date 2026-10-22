@@ -17,7 +17,7 @@ the child on a tablet and the parent/teacher on a phone.
 Quran text comes from the Quran.com API (Uthmani script), with AlQuran.cloud as a backup. Nothing is
 typed by hand. Audio comes verse by verse from EveryAyah.
 
-**Not in v0.1 yet:** automatic memorization/revision schedules, badges and progress screens, history
+**Not yet:** automatic memorization schedule (revision is automatic since v0.2), badges and progress screens, history
 calendar, the 4-digit child login, offline recording queue, French. See the design canvas for where
 these go.
 
@@ -42,6 +42,12 @@ You need three free accounts: GitHub (you have it), **Supabase** (database, logi
 
 This creates the tables, the security rules (your son can only send his own recordings; only you can
 review) and a private `audio` storage bucket.
+
+### 2b. Add automatic revision (second SQL file)
+
+Same place: **SQL Editor** → **New query** → paste everything from
+[`supabase/002_auto_revision.sql`](supabase/002_auto_revision.sql) → **Run**.
+(Already set up before this file existed? Just run this one. It doesn't touch your existing data.)
 
 ### 3. Create the two logins
 
@@ -97,8 +103,25 @@ Allow the microphone the first time your son records, and the first time you rec
 
 ### 8. First use
 
-On your phone: **Plan** → add today's tasks (for example Revision: Al-Ikhlas, Al-Falaq, An-Nas; New
-verses: Al-Mulk 1–5). They appear on the tablet within about 20 seconds, or straight away when the app is reopened.
+1. On your phone, **Surahs** tab: mark what your son already knows. "Mark all known" fills a whole juz;
+   tap a surah to mark only a verse range.
+2. **Plan** tab → **Automatic revision**: choose how often to go through everything (every 3 to 30 days)
+   and any days without revision. The preview shows the coming days. Tap **Start automatic revision**.
+3. Still on **Plan**, add new verses to memorize under **Day by day** (e.g. New verses: Al-Mulk 1–5), plus any
+   extra revision you want by hand.
+
+Tasks appear on the tablet within about 20 seconds, or straight away when the app is reopened.
+
+### How automatic revision works
+
+- Every known surah (or known verse range) comes up once per cycle.
+- Days are balanced by **amount of text**, not by number of surahs, so a day with a long surah gets fewer others.
+- Order goes from the end of the Quran backwards (An-Nas first).
+- Surahs longer than about two pages are split into verse ranges across days. Short surahs are never split.
+- If there is too little to fill every day of the cycle, the cycle simply gets shorter.
+- Changing the cycle, rest days or the known list recalculates the coming days. Anything already started
+  stays as it is: if today's revision was already started, the new plan begins tomorrow.
+- Tasks you add by hand are never touched by the automatic plan.
 
 ---
 
@@ -113,12 +136,13 @@ If you do run it locally: `npm install`, copy `.env.example` to `.env.local` and
 
 ```
 supabase/schema.sql          tables, security rules, storage bucket, submit/review functions
+supabase/002_auto_revision.sql   known surahs, revision settings, the balanced scheduler
 src/lib/quran.ts             surah list, verse text, reciter audio URLs (change reciter here)
 src/lib/data.ts              all database calls, stars and streak
 src/lib/useReciter.ts        verse-by-verse player (repeat, prev/next, highlight)
 src/lib/useRecorder.ts       microphone recording
 src/screens/child/           Today, Listen/Record screen, recorder panel
-src/screens/parent/          Dashboard, Review, Plan
+src/screens/parent/          Dashboard, Review, Plan + AutoRevision, Surahs
 src/styles.css               design tokens and all styles
 ```
 

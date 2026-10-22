@@ -20,6 +20,31 @@ export interface Assignment {
   status: Status;
   position: number;
   created_at: string;
+  source?: 'manual' | 'auto';
+}
+
+export interface Memorized {
+  child_id: string;
+  surah: number;
+  verse_from: number;
+  verse_to: number;
+  weight: number;
+}
+
+export interface RevisionSettings {
+  child_id: string;
+  cycle_days: number;
+  rest_weekdays: number[]; // 0 = Sunday … 6 = Saturday
+  start_date: string;
+  active: boolean;
+}
+
+export interface ScheduleRow {
+  day: string;
+  surah: number;
+  verse_from: number;
+  verse_to: number;
+  ord: number;
 }
 
 export interface Recording {

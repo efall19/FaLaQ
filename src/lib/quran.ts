@@ -145,3 +145,28 @@ export async function getBasmala(): Promise<string> {
   const fatiha = await getVerses(1);
   return fatiha[0]?.text ?? '';
 }
+
+/**
+ * Amount of text in a verse range: Arabic letters without vowel marks.
+ * Used to balance revision days (≈ 700–800 letters per mushaf page).
+ */
+export function letterWeight(verses: Verse[], from: number, to: number): number {
+  let n = 0;
+  for (const v of verses) {
+    if (v.n < from || v.n > to) continue;
+    n += v.text.replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u08D3-\u08FF\s]/g, '').length;
+  }
+  return Math.max(1, n);
+}
+
+export async function weightFor(surah: number, from: number, to: number): Promise<number> {
+  return letterWeight(await getVerses(surah), from, to);
+}
+
+/** Juz groups used on the Surahs screen (surah ranges, end of the Quran first). */
+export const SURAH_GROUPS: { title: string; from: number; to: number }[] = [
+  { title: 'Juz Amma (juz 30)', from: 78, to: 114 },
+  { title: 'Tabarak (juz 29)', from: 67, to: 77 },
+  { title: 'Qad Sami\u2019a (juz 28)', from: 58, to: 66 },
+  { title: 'Rest of the Quran', from: 1, to: 57 },
+];

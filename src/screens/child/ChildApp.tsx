@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Assignment, Profile, Recording } from '../../lib/types';
-import { countStars, fetchAssignments, fetchRecordingsFor, fetchStreak } from '../../lib/data';
+import { countStars, ensurePlan, fetchAssignments, fetchRecordingsFor, fetchStreak } from '../../lib/data';
 import { isoDate } from '../../lib/dates';
 import { usePolling } from '../../lib/usePolling';
 import { useChapters } from '../../lib/useVerses';
@@ -20,6 +20,8 @@ export interface ChildDay {
 
 async function loadDay(childId: string): Promise<ChildDay> {
   const date = isoDate();
+  // Top up the automatic revision plan; harmless if it isn't set up.
+  await ensurePlan(childId, date).catch(() => undefined);
   const assignments = await fetchAssignments(childId, date, date);
   const [recs, stars, streak] = await Promise.all([
     fetchRecordingsFor(assignments.map((a) => a.id)),

@@ -4,12 +4,13 @@ import { fetchChildren } from '../../lib/data';
 import { usePolling } from '../../lib/usePolling';
 import { useChapters } from '../../lib/useVerses';
 import { CenterMessage, Spinner, Toast } from '../../components/Bits';
-import { IconCalendar, IconHome, IconLogout } from '../../components/Icons';
+import { IconBook, IconCalendar, IconHome, IconLogout } from '../../components/Icons';
 import { Dashboard } from './Dashboard';
 import { Review } from './Review';
 import { Plan } from './Plan';
+import { Surahs } from './Surahs';
 
-type View = { name: 'home' } | { name: 'review'; id: string } | { name: 'plan' };
+type View = { name: 'home' } | { name: 'review'; id: string } | { name: 'plan' } | { name: 'surahs' };
 
 export function ParentApp({ profile, onSignOut }: { profile: Profile; onSignOut: () => void }) {
   const [view, setView] = useState<View>({ name: 'home' });
@@ -47,7 +48,17 @@ export function ParentApp({ profile, onSignOut }: { profile: Profile; onSignOut:
       />
     );
   } else if (view.name === 'plan') {
-    body = <Plan child={child} chapters={chapters} chaptersError={chaptersError} onRetryChapters={retryChapters} />;
+    body = (
+      <Plan
+        child={child}
+        chapters={chapters}
+        chaptersError={chaptersError}
+        onRetryChapters={retryChapters}
+        onGoSurahs={() => setView({ name: 'surahs' })}
+      />
+    );
+  } else if (view.name === 'surahs') {
+    body = <Surahs child={child} chapters={chapters} chaptersError={chaptersError} onRetryChapters={retryChapters} />;
   } else {
     body = (
       <Dashboard
@@ -87,6 +98,15 @@ export function ParentApp({ profile, onSignOut }: { profile: Profile; onSignOut:
           >
             <IconCalendar size={24} />
             Plan
+          </button>
+          <button
+            type="button"
+            className={view.name === 'surahs' ? 'active' : ''}
+            aria-current={view.name === 'surahs' ? 'page' : undefined}
+            onClick={() => setView({ name: 'surahs' })}
+          >
+            <IconBook size={24} />
+            Surahs
           </button>
           <button type="button" onClick={onSignOut}>
             <IconLogout size={24} />
