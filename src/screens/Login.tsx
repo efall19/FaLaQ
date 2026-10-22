@@ -15,10 +15,17 @@ export function Login() {
     setError('');
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     if (error) {
+      const msg = error.message.toLowerCase();
       setError(
-        error.message.toLowerCase().includes('invalid')
+        msg.includes('invalid login credentials')
           ? 'That email and password don’t match.'
-          : 'Couldn’t sign in. Check the internet connection.',
+          : msg.includes('api key') || msg.includes('apikey')
+            ? 'The app isn’t connected to the database correctly (Supabase key). Check VITE_SUPABASE_ANON_KEY on Vercel.'
+            : msg.includes('not confirmed')
+              ? 'This account isn’t confirmed yet. Confirm the user in Supabase → Authentication → Users.'
+              : msg.includes('fetch') || msg.includes('network')
+                ? 'Couldn’t reach the server. Check the internet connection and VITE_SUPABASE_URL on Vercel.'
+                : `Couldn’t sign in: ${error.message}`,
       );
       setBusy(false);
     }
