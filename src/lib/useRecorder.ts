@@ -18,6 +18,7 @@ function pickMime(): string {
 }
 
 export function extensionFor(mime: string): string {
+  if (mime.includes('wav')) return 'wav';
   if (mime.includes('mp4')) return 'm4a';
   if (mime.includes('ogg')) return 'ogg';
   return 'webm';

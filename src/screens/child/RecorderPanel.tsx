@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Assignment } from '../../lib/types';
 import { extensionFor, useRecorder } from '../../lib/useRecorder';
+import { toPlayableEverywhere } from '../../lib/wav';
 import { submitRecording, uploadAudio } from '../../lib/data';
 import { fmtSec } from '../../lib/dates';
 import { AudioPlayer, Spinner } from '../../components/Bits';
@@ -32,8 +33,9 @@ export function RecorderPanel({
     try {
       let path = uploadedPath;
       if (!path) {
-        path = `${childId}/${assignment.id}/${Date.now()}.${extensionFor(rec.blob.type)}`;
-        await uploadAudio(path, rec.blob);
+        const file = await toPlayableEverywhere(rec.blob); // WebM → WAV so the iPhone can play it
+        path = `${childId}/${assignment.id}/${Date.now()}.${extensionFor(file.type)}`;
+        await uploadAudio(path, file);
         setUploadedPath(path);
       }
       await submitRecording(assignment.id, path, rec.seconds);

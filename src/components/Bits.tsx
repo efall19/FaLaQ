@@ -53,7 +53,7 @@ export function AudioPlayer({
 
   // A format this browser says it can't play at all (e.g. WebM on some iPhones).
   const ext = (path ?? '').split('.').pop()?.toLowerCase() ?? '';
-  const mime = ext === 'webm' ? 'audio/webm' : ext === 'ogg' ? 'audio/ogg' : ext === 'm4a' || ext === 'mp4' ? 'audio/mp4' : '';
+  const mime = ext === 'webm' ? 'audio/webm' : ext === 'ogg' ? 'audio/ogg' : ext === 'm4a' || ext === 'mp4' ? 'audio/mp4' : ext === 'wav' ? 'audio/wav' : '';
   const unsupported = Boolean(mime) && typeof document !== 'undefined' && document.createElement('audio').canPlayType(mime) === '';
 
   useEffect(() => {

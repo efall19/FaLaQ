@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Assignment, Profile, Recording } from '../../lib/types';
-import { countStars, ensurePlan, fetchAssignments, fetchRecordingsFor, fetchStreak, fetchWallet, type Wallet } from '../../lib/data';
+import { convertPendingWebm, countStars, ensurePlan, fetchAssignments, fetchRecordingsFor, fetchStreak, fetchWallet, type Wallet } from '../../lib/data';
 import { isoDate } from '../../lib/dates';
 import { usePolling } from '../../lib/usePolling';
 import { useChapters } from '../../lib/useVerses';
@@ -79,6 +79,11 @@ export function ChildApp({ profile, onSignOut }: { profile: Profile; onSignOut: 
   }, [day.data, chapters, profile.id]);
 
   const endCelebrate = useCallback(() => setCelebrate(null), []);
+
+  // Make older recordings still waiting for review playable on the parent's iPhone.
+  useEffect(() => {
+    convertPendingWebm(profile.id).catch(() => undefined);
+  }, [profile.id]);
 
   const current = view.name === 'surah' ? day.data?.assignments.find((a) => a.id === view.id) : undefined;
 

@@ -333,3 +333,34 @@ export async function runCleanup(today = isoDate()): Promise<number> {
   if (mark.error) throw new Error(mark.error.message);
   return rows.length;
 }
+
+/**
+ * Student side: convert this student's recordings still waiting for review that
+ * were saved as WebM (which iPhones play unreliably) into WAV copies, and point
+ * the recording at the copy. Runs quietly when the student's app opens.
+ */
+export async function convertPendingWebm(childId: string): Promise<number> {
+  const { toWav } = await import('./wav');
+  const res = await supabase
+    .from('recordings')
+    .select('id, assignment_id, audio_path')
+    .eq('child_id', childId)
+    .eq('review', 'pending')
+    .like('audio_path', '%.webm');
+  if (res.error) throw new Error(res.error.message);
+  let done = 0;
+  for (const r of (res.data ?? []) as { id: string; assignment_id: string; audio_path: string }[]) {
+    try {
+      const dl = await supabase.storage.from('audio').download(r.audio_path);
+      if (dl.error || !dl.data) continue;
+      const wav = await toWav(dl.data);
+      const path = `${childId}/${r.assignment_id}/${Date.now()}.wav`;
+      await uploadAudio(path, wav);
+      const rpc = await supabase.rpc('replace_recording_audio', { p_recording: r.id, p_path: path });
+      if (!rpc.error) done++;
+    } catch {
+      /* leave this one as it is; try again next time */
+    }
+  }
+  return done;
+}

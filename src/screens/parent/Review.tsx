@@ -7,6 +7,7 @@ import { clock, fmtSec, shortDate } from '../../lib/dates';
 import { useSignedUrl } from '../../lib/useSignedUrl';
 import { useVerses } from '../../lib/useVerses';
 import { extensionFor, useRecorder } from '../../lib/useRecorder';
+import { toPlayableEverywhere } from '../../lib/wav';
 import { CRYSTALS_BY_ATTEMPT } from '../../lib/ship';
 import { AudioPlayer, CenterMessage, Spinner } from '../../components/Bits';
 import { QuranText } from '../../components/QuranText';
@@ -144,8 +145,9 @@ function ReviewBody({
       let notePath: string | null = null;
       let noteDur: number | null = null;
       if (note.blob && note.state === 'recorded') {
-        notePath = `${parentId}/notes/${rec.id}-${Date.now()}.${extensionFor(note.blob.type)}`;
-        await uploadAudio(notePath, note.blob);
+        const file = await toPlayableEverywhere(note.blob);
+        notePath = `${parentId}/notes/${rec.id}-${Date.now()}.${extensionFor(file.type)}`;
+        await uploadAudio(notePath, file);
         noteDur = note.seconds;
       }
       await reviewRecording(rec.id, approve, comment, notePath, noteDur);
