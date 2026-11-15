@@ -567,7 +567,7 @@ function basePage(lesson: number, page: number, ctx: BuildContext): Omit<Page, '
     default: {
       // Lesson 17: verses Adam has not memorized.
       const vs = (pool?.verses ?? []).filter(
-        (v) => !ctx.knownSurahs.has(v.surah) && v.words.length >= 3 && v.words.length <= 12 && v.infos.every((i) => i.level < 99),
+        (v) => v.surah !== 1 && !ctx.knownSurahs.has(v.surah) && v.words.length >= 3 && v.words.length <= 12 && v.infos.every((i) => i.level < 99),
       );
       const start = vs.length ? ((page - 1) * 3) % vs.length : 0;
       const pickV = vs.slice(start, start + 3);
