@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Assignment, Status } from '../lib/types';
-import { IconCheck, IconCircle, IconClock, IconPause, IconPlay, IconPlus, IconRedo, IconRepeat } from './Icons';
+import { IconCheck, IconCircle, IconClock, IconPause, IconPlay, IconPlus, IconReading, IconRedo, IconRepeat } from './Icons';
 import { fmtSec } from '../lib/dates';
 
 const CHILD_LABEL: Record<Status, string> = {
@@ -150,10 +150,10 @@ export function AudioPlayer({
  * Label for the type of task: automatic revision plan (plum),
  * revision added by hand (teal), or new memorization (gold).
  */
-export function TaskTag({ task, small = false }: { task: Pick<Assignment, 'kind' | 'source'>; small?: boolean }) {
-  const type = task.kind === 'memorization' ? 'memo' : task.source === 'auto' ? 'plan' : 'revision';
-  const label = type === 'memo' ? 'Memorization' : type === 'plan' ? 'Revision plan' : 'Revision';
-  const Icon = type === 'memo' ? IconPlus : IconRepeat;
+export function TaskTag({ task, small = false }: { task: Pick<Assignment, 'kind' | 'source' | 'track'>; small?: boolean }) {
+  const type = task.track === 'reading' ? 'reading' : task.kind === 'memorization' ? 'memo' : task.source === 'auto' ? 'plan' : 'revision';
+  const label = type === 'reading' ? 'Reading' : type === 'memo' ? 'Memorization' : type === 'plan' ? 'Revision plan' : 'Revision';
+  const Icon = type === 'reading' ? IconReading : type === 'memo' ? IconPlus : IconRepeat;
   return (
     <span className={`tag tag-${type}${small ? ' tag-sm' : ''}`}>
       <Icon size={small ? 12 : 14} />

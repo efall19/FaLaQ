@@ -388,7 +388,7 @@ button.ayah:hover { background: #f7f3e6; }
 .list-row strong { font-size: 15px; }
 .tabbar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: #fff; border-top: 1px solid var(--line);
-  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 6px 0 calc(8px + env(safe-area-inset-bottom));
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 6px 0 calc(8px + env(safe-area-inset-bottom));
 }
 .tabbar button {
   border: none; background: none; display: flex; flex-direction: column; align-items: center; gap: 3px;
@@ -545,4 +545,96 @@ code { font-size: 12px; background: #eceFea; padding: 1px 5px; border-radius: 5p
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ── reading lessons: blue accent ───────────────────────── */
+.tag-reading { background: var(--blue-soft); color: var(--blue); }
+.card-reading { background: #fbfcff; }
+.card-reading.card-todo { border-color: #b5c8e6; }
+.ar-name.blue, .ar-inline.blue { color: var(--blue); }
+.icon-circle.indigo { background: var(--blue-soft); color: var(--blue); }
+.reading-title { color: var(--blue); }
+
+.reading-layout { display: grid; grid-template-columns: minmax(300px, 420px) 1fr; gap: 28px; align-items: start; }
+@media (max-width: 1000px) { .reading-layout { grid-template-columns: 1fr; } }
+
+.lesson-path { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0; }
+.lp-step { display: flex; gap: 14px; align-items: flex-start; position: relative; padding-bottom: 14px; }
+.lp-step:not(:last-child)::before {
+  content: ''; position: absolute; left: 17px; top: 36px; bottom: 0; width: 2px; background: var(--line);
+}
+.lp-step.done:not(:last-child)::before { background: #a8d2b8; }
+.lp-dot {
+  width: 36px; height: 36px; flex: none; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: #e9ede8; color: #8a9893; font-weight: 700; font-size: 15px;
+}
+.lp-step.done .lp-dot { background: var(--green-soft); color: var(--green); }
+.lp-step.here .lp-dot { background: var(--blue); color: #fff; box-shadow: 0 0 0 5px var(--blue-soft); }
+.lp-text { display: flex; flex-direction: column; gap: 2px; padding-top: 6px; min-width: 0; }
+.lp-step:not(.done):not(.here) .lp-text strong { color: var(--ink-2); font-weight: 500; }
+.lp-ar { font-family: var(--arabic); font-size: 18px; color: var(--ink-2); line-height: 1.4; }
+.lp-step.here .lp-ar { color: var(--blue); }
+
+/* a reading page */
+.reading-card-body { justify-content: flex-start; gap: 16px; }
+.reading-intro { display: flex; flex-direction: column; gap: 10px; }
+.reading-hint { margin: 0; font-size: 17px; line-height: 1.5; }
+.steps { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; }
+.steps li {
+  display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px 0 6px; border-radius: 999px;
+  background: var(--blue-soft); color: var(--blue); font-weight: 600; font-size: 15px;
+}
+.steps li span {
+  width: 26px; height: 26px; border-radius: 50%; background: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 13px;
+}
+.rpage { display: flex; flex-direction: column; gap: 16px; }
+.rrow { display: flex; flex-direction: column; gap: 8px; }
+.rrow-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.rrow-label { font-size: 13px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; color: var(--ink-2); }
+.rrow-review .rrow-label { color: #5a3e8a; }
+.rrow-tricky .rrow-label { color: var(--clay); }
+.rrow-spot .rrow-label { color: var(--blue); }
+.ritems { display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch; }
+.ritem {
+  font: inherit; color: var(--ink); background: #fff; border: 1.5px solid var(--line); border-radius: 16px;
+  padding: 6px 16px 8px; min-width: 64px; display: inline-flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.ritem:disabled { opacity: 1; cursor: default; }
+.ritem.playable { cursor: pointer; border-color: #b5c8e6; }
+.ritem.playable:active { background: var(--blue-soft); }
+.ritem.on { background: var(--clay-soft); border-color: var(--clay-line); color: var(--clay); }
+.ritem-ar { font-family: var(--quran); line-height: 1.9; }
+.ritem-say { font-family: var(--font); font-size: 12px; color: var(--ink-2); line-height: 1.3; white-space: nowrap; }
+.rpage-xl .ritem-ar { font-size: 52px; }
+.rpage-lg .ritem-ar { font-size: 40px; }
+.rpage-md .ritem-ar { font-size: 32px; }
+.rrow-review .ritem { background: #fcfbfe; border-color: #ddd2ee; }
+.rrow-tricky .ritem { background: #fffaf5; border-color: var(--clay-line); }
+.rrow-verse .ritems { gap: 6px; }
+.rrow-verse .ritem { border-color: transparent; padding: 2px 6px; min-width: 0; }
+.rrow-verse .ritem.on { border-color: var(--clay-line); }
+.rverse-end { font-size: 26px; align-self: center; }
+.review .rpage-xl .ritem-ar, .reading-preview .rpage-xl .ritem-ar { font-size: 36px; }
+.review .rpage-lg .ritem-ar, .reading-preview .rpage-lg .ritem-ar { font-size: 30px; }
+.review .rpage-md .ritem-ar, .reading-preview .rpage-md .ritem-ar { font-size: 26px; }
+.review .ritem, .reading-preview .ritem { padding: 4px 10px 6px; min-width: 48px; border-radius: 12px; }
+.review .ritems, .reading-preview .ritems { gap: 6px; }
+.reading-preview { display: flex; flex-direction: column; gap: 10px; }
+.reading-bar { justify-content: space-between; }
+.lights-note {
+  position: absolute; right: 14px; bottom: 14px; text-align: center; font-size: 13px; font-weight: 600;
+  color: #fff; background: rgba(255, 255, 255, .12); border-radius: 999px; padding: 6px 12px;
+}
+.open-toggle { display: flex; align-items: center; gap: 8px; flex: none; }
+.tricky-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.tricky-chip {
+  display: inline-flex; align-items: center; gap: 8px; font-family: var(--quran); font-size: 26px; line-height: 1.6;
+  padding: 0 12px; border-radius: 12px; background: #fff; border: 1px solid var(--line);
+}
+.tricky-chip.open { background: var(--clay-soft); border-color: var(--clay-line); }
+.tricky-n { font-family: var(--font); font-size: 12px; color: var(--ink-2); }
+@media (max-width: 860px) {
+  .rpage-xl .ritem-ar { font-size: 40px; }
+  .rpage-lg .ritem-ar { font-size: 32px; }
+  .rpage-md .ritem-ar { font-size: 28px; }
 }

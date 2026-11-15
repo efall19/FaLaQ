@@ -1,7 +1,7 @@
 import type { Profile } from '../../lib/types';
-import { IconLogout, IconRocket, IconTodayCheck, Logo } from '../../components/Icons';
+import { IconLogout, IconReading, IconRocket, IconTodayCheck, Logo } from '../../components/Icons';
 
-export type ChildTab = 'today' | 'ship';
+export type ChildTab = 'today' | 'reading' | 'ship';
 
 /** Left rail on a landscape tablet; becomes a bottom bar in portrait. */
 export function Rail({
@@ -26,6 +26,15 @@ export function Rail({
       >
         <IconTodayCheck size={28} />
         Today
+      </button>
+      <button
+        type="button"
+        className={`rail-item${active === 'reading' ? ' active' : ''}`}
+        aria-current={active === 'reading' ? 'page' : undefined}
+        onClick={() => onTab('reading')}
+      >
+        <IconReading size={28} />
+        Reading
       </button>
       <button
         type="button"

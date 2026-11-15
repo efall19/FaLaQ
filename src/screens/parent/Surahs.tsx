@@ -32,7 +32,7 @@ export function Surahs({
   const kept = usePolling(() => fetchKeptRecordings(child.id), [child.id], 5 * 60 * 1000);
   const keptBySurah = useMemo(() => {
     const m = new Map<number, RecordingWithAssignment>();
-    for (const r of kept.data ?? []) if (!m.has(r.assignment.surah)) m.set(r.assignment.surah, r); // newest first
+    for (const r of kept.data ?? []) if (r.assignment.track !== 'reading' && !m.has(r.assignment.surah)) m.set(r.assignment.surah, r); // newest first
     return m;
   }, [kept.data]);
   const [query, setQuery] = useState('');

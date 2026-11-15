@@ -29,11 +29,14 @@ export function Ship({
   size = 400,
   float = false,
   label = 'Your spaceship',
+  lights,
 }: {
   config: ShipConfig;
   size?: number;
   float?: boolean;
   label?: string;
+  /** Reading lights: one per reading lesson finished (0–17); undefined hides them. */
+  lights?: number;
 }) {
   const uid = useId().replace(/:/g, '');
   const paint = PAINT[config.paint ?? 'paint-white'] ?? PAINT['paint-white'];
@@ -54,7 +57,30 @@ export function Ship({
       </g>
       </g>
       <Companion id={config.companion} />
+      {lights !== undefined && <ReadingLights n={lights} />}
     </svg>
+  );
+}
+
+/** 17 lights in an arc over the ship, one lit for each reading lesson finished. */
+function ReadingLights({ n }: { n: number }) {
+  const pts = Array.from({ length: 17 }, (_, i) => {
+    const a = Math.PI * (1.08 + (0.84 * i) / 16);
+    return [200 + 178 * Math.cos(a), 205 + 178 * Math.sin(a)] as const;
+  });
+  return (
+    <g aria-hidden="true">
+      {pts.map(([x, y], i) =>
+        i < n ? (
+          <g key={i}>
+            <circle cx={x} cy={y} r="9" fill="#FFE08A" opacity=".35" />
+            <circle cx={x} cy={y} r="5" fill="#FFD45C" stroke="#fff" strokeWidth="1.2" />
+          </g>
+        ) : (
+          <circle key={i} cx={x} cy={y} r="4" fill="none" stroke="#ffffff" strokeOpacity=".45" strokeWidth="1.4" />
+        ),
+      )}
+    </g>
   );
 }
 

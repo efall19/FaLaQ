@@ -5,13 +5,14 @@ import { isoDate } from '../../lib/dates';
 import { usePolling } from '../../lib/usePolling';
 import { useChapters } from '../../lib/useVerses';
 import { CenterMessage, Spinner, Toast } from '../../components/Bits';
-import { IconBook, IconCalendar, IconHome, IconLogout } from '../../components/Icons';
+import { IconBook, IconCalendar, IconHome, IconLogout, IconReading } from '../../components/Icons';
 import { Dashboard } from './Dashboard';
 import { Review } from './Review';
 import { Plan } from './Plan';
 import { Surahs } from './Surahs';
+import { ReadingAdmin } from './ReadingAdmin';
 
-type View = { name: 'home' } | { name: 'review'; id: string } | { name: 'plan' } | { name: 'surahs' };
+type View = { name: 'home' } | { name: 'review'; id: string } | { name: 'plan' } | { name: 'surahs' } | { name: 'reading' };
 
 export function ParentApp({ profile, onSignOut }: { profile: Profile; onSignOut: () => void }) {
   const [view, setView] = useState<View>({ name: 'home' });
@@ -80,6 +81,8 @@ export function ParentApp({ profile, onSignOut }: { profile: Profile; onSignOut:
         onGoSurahs={() => setView({ name: 'surahs' })}
       />
     );
+  } else if (view.name === 'reading') {
+    body = <ReadingAdmin child={child} parentId={profile.id} />;
   } else if (view.name === 'surahs') {
     body = <Surahs child={child} chapters={chapters} chaptersError={chaptersError} onRetryChapters={retryChapters} />;
   } else {
@@ -90,6 +93,7 @@ export function ParentApp({ profile, onSignOut }: { profile: Profile; onSignOut:
         chapters={chapters}
         onOpenReview={(id) => setView({ name: 'review', id })}
         onOpenPlan={() => setView({ name: 'plan' })}
+        onOpenReading={() => setView({ name: 'reading' })}
       />
     );
   }
@@ -130,6 +134,15 @@ export function ParentApp({ profile, onSignOut }: { profile: Profile; onSignOut:
           >
             <IconBook size={24} />
             Surahs
+          </button>
+          <button
+            type="button"
+            className={view.name === 'reading' ? 'active' : ''}
+            aria-current={view.name === 'reading' ? 'page' : undefined}
+            onClick={() => setView({ name: 'reading' })}
+          >
+            <IconReading size={24} />
+            Reading
           </button>
           <button type="button" onClick={onSignOut}>
             <IconLogout size={24} />

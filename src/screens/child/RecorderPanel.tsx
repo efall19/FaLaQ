@@ -200,7 +200,11 @@ export function RecorderPanel({
             <IconMic size={64} />
           </button>
           <h2>Tap to record</h2>
-          <p className="muted">Recite the whole {assignment.kind === 'memorization' ? 'passage' : 'surah'}, then tap Stop.</p>
+          <p className="muted">
+            {assignment.track === 'reading'
+              ? 'Read the whole page, row by row, then tap Stop.'
+              : `Recite the whole ${assignment.kind === 'memorization' ? 'passage' : 'surah'}, then tap Stop.`}
+          </p>
         </div>
       );
   }

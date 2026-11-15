@@ -10,6 +10,10 @@ import { extensionFor, useRecorder } from '../../lib/useRecorder';
 import { toPlayableEverywhere } from '../../lib/wav';
 import { CRYSTALS_BY_ATTEMPT } from '../../lib/ship';
 import { AudioPlayer, CenterMessage, Spinner } from '../../components/Bits';
+import { ReadingPageView } from '../../components/ReadingPage';
+import { addMistakes, clearMistakes, fetchOpenMistakes } from '../../lib/reading/data';
+import { lessonMeta } from '../../lib/reading/lessons';
+import { taskName } from '../../lib/labels';
 import { QuranText } from '../../components/QuranText';
 import { IconBack, IconCheck, IconMic, IconRedo, IconStop, IconX } from '../../components/Icons';
 
@@ -103,7 +107,16 @@ function ReviewBody({
   onDone: (toast?: string) => void;
 }) {
   const a = rec.assignment;
-  const chapter = chapters?.[a.surah - 1];
+  const reading = a.track === 'reading';
+  const chapter = reading ? undefined : chapters?.[a.surah - 1];
+  const [mistakes, setMistakes] = useState<Set<string>>(new Set());
+  const toggleMistake = (t: string) =>
+    setMistakes((m) => {
+      const n = new Set(m);
+      if (n.has(t)) n.delete(t);
+      else n.add(t);
+      return n;
+    });
   const { url, error: urlError } = useSignedUrl(rec.audio_path);
   const text = useVerses(a.surah, a.verse_from, a.verse_to);
   const note = useRecorder();
@@ -152,6 +165,16 @@ function ReviewBody({
       }
       await reviewRecording(rec.id, approve, comment, notePath, noteDur);
       const extras: string[] = [];
+      if (reading) {
+        // Marked items join the tricky list; open tricky items read well at the first attempt are cleared.
+        await addMistakes(child.id, a, Array.from(mistakes));
+        if (approve && rec.attempt <= 1) {
+          const onPage = new Set((a.reading_content?.rows ?? []).flatMap((r) => r.items.map((i) => i.t)));
+          const open = await fetchOpenMistakes(child.id).catch(() => [] as string[]);
+          await clearMistakes(child.id, open.filter((t) => onPage.has(t) && !mistakes.has(t)));
+        }
+        if (mistakes.size) extras.push(`${mistakes.size} tricky ${mistakes.size === 1 ? 'item' : 'items'} saved`);
+      }
       if (approve && keep) {
         await setKeep(rec.id, true);
         extras.push('recording kept');
@@ -165,7 +188,7 @@ function ReviewBody({
       onDone(
         approve
           ? `Approved. ${child.display_name} earned a star and ${CRYSTALS_BY_ATTEMPT(rec.attempt)} crystals (attempt ${rec.attempt})${extras.length ? `; ${extras.join(', ')}` : ''}.`
-          : `Sent back for a redo. ${child.display_name} will see your note on the card.`,
+          : `Sent back for a redo. ${child.display_name} will see your note on the card${extras.length ? `; ${extras.join(', ')}` : ''}.`,
       );
     } catch (e: any) {
       setError(e?.message ? `Couldn't save: ${e.message}` : "Couldn't save. Check the connection and try again.");
@@ -179,12 +202,19 @@ function ReviewBody({
       <div className="review-scroll">
         <div className="row-between baseline">
           <div>
-            <h1 className="p-title">{chapter?.name ?? `Surah ${a.surah}`}</h1>
+            <h1 className="p-title">{reading ? taskName(a, chapters) : (chapter?.name ?? `Surah ${a.surah}`)}</h1>
             <div className="muted small">
-              Verses {a.verse_from}–{a.verse_to} · {a.kind === 'memorization' ? 'New memorization' : 'Revision'} ·{' '}
+              {reading
+                ? `${a.reading_content?.title ?? lessonMeta(a.reading_lesson ?? 1).en} · `
+                : `Verses ${a.verse_from}–${a.verse_to} · ${a.kind === 'memorization' ? 'New memorization' : 'Revision'} · `}
               {shortDate(a.due_date)} {clock(rec.created_at)}
             </div>
           </div>
+          {reading && (
+            <div className="ar-name blue" lang="ar" dir="rtl">
+              {lessonMeta(a.reading_lesson ?? 1).ar}
+            </div>
+          )}
           {chapter && (
             <div className="ar-name" lang="ar" dir="rtl">
               {chapter.arabic}
@@ -196,10 +226,33 @@ function ReviewBody({
           <AudioPlayer src={url} path={rec.audio_path} loadError={urlError} fallbackDuration={rec.duration_sec} label={`Recording · ${fmtSec(rec.duration_sec)}`} />
         </div>
 
-        <div className="box">
-          <div className="eyebrow">Follow along</div>
-          <QuranText verses={text.verses} basmala={null} error={text.error} onRetry={text.retry} size="small" />
-        </div>
+        {reading ? (
+          <div className="box">
+            <div className="eyebrow">Follow along{alreadyReviewed ? '' : ' · tap what he got wrong'}</div>
+            {a.reading_content ? (
+              <ReadingPageView
+                page={a.reading_content}
+                mode={alreadyReviewed ? 'preview' : 'review'}
+                selected={mistakes}
+                onToggle={toggleMistake}
+              />
+            ) : (
+              <div className="muted">This page's content wasn't saved.</div>
+            )}
+            {!alreadyReviewed && (
+              <div className="muted small">
+                {mistakes.size
+                  ? `${mistakes.size} marked. They come back on his next pages until he reads them well.`
+                  : `Pass rule: ${lessonMeta(a.reading_lesson ?? 1).passRule.toLowerCase()}.`}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="box">
+            <div className="eyebrow">Follow along</div>
+            <QuranText verses={text.verses} basmala={null} error={text.error} onRetry={text.retry} size="small" />
+          </div>
+        )}
 
         {alreadyReviewed ? (
           <div className="box">

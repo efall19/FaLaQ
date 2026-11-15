@@ -1,4 +1,6 @@
 import type { Assignment, Profile, Recording } from '../../lib/types';
+import { isReading } from '../../lib/types';
+import { ReadingCard } from './ReadingScreen';
 import type { Chapter } from '../../lib/quran';
 import type { ChildDay } from './ChildApp';
 import { isoDate, longDate } from '../../lib/dates';
@@ -10,6 +12,7 @@ import {
   IconHeadphones,
   IconMic,
   IconPlus,
+  IconReading,
   IconRepeat,
   IconStar,
   IconWifiOff,
@@ -28,6 +31,7 @@ export function Today({
   chapters,
   onRetry,
   onOpen,
+  onOpenReading,
   onSignOut,
   onTab,
 }: {
@@ -38,12 +42,14 @@ export function Today({
   chapters: Chapter[] | null;
   onRetry: () => void;
   onOpen: (id: string, mode: 'listen' | 'record') => void;
+  onOpenReading: (id: string, mode: 'read' | 'record') => void;
   onSignOut: () => void;
   onTab: (t: ChildTab) => void;
 }) {
   const list = day?.assignments ?? [];
-  const revision = list.filter((a) => a.kind === 'revision');
-  const memo = list.filter((a) => a.kind === 'memorization');
+  const revision = list.filter((a) => a.kind === 'revision' && !isReading(a));
+  const memo = list.filter((a) => a.kind === 'memorization' && !isReading(a));
+  const reading = day?.reading?.options.todayCard === false ? [] : list.filter(isReading);
   const done = list.filter((a) => a.status === 'submitted' || a.status === 'approved').length;
 
   return (
@@ -152,6 +158,19 @@ export function Today({
                 </div>
               </section>
             )}
+            {reading.length > 0 && (
+              <section className="section">
+                <div className="section-title reading-title">
+                  <IconReading size={22} />
+                  <h2>Reading</h2>
+                </div>
+                <div className="card-grid">
+                  {reading.map((a) => (
+                    <ReadingCard key={a.id} a={a} latest={day?.latest[a.id]} onOpen={onOpenReading} />
+                  ))}
+                </div>
+              </section>
+            )}
           </>
         )}
       </main>
@@ -218,7 +237,7 @@ function SurahCard({
   );
 }
 
-function TeacherNote({ rec }: { rec: Recording }) {
+export function TeacherNote({ rec }: { rec: Recording }) {
   const { url, error } = useSignedUrl(rec.note_path);
   if (!rec.note_path && !rec.comment) return null;
   return (

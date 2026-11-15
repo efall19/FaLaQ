@@ -5,6 +5,7 @@ import { addAssignment, deleteAssignment, fetchAssignments } from '../../lib/dat
 import { addDays, isoDate, longDate, shortDate } from '../../lib/dates';
 import { usePolling } from '../../lib/usePolling';
 import { Spinner, StatusBadge, TaskTag } from '../../components/Bits';
+import { taskName } from '../../lib/labels';
 import { IconBack, IconCopy, IconForward, IconPlus, IconTrash } from '../../components/Icons';
 import { AutoRevision } from './AutoRevision';
 
@@ -79,7 +80,7 @@ export function Plan({
       const existing = new Set(list.map(key));
       let pos = list.length;
       for (const a of prev) {
-        if (existing.has(key(a))) continue;
+        if (a.track === 'reading' || existing.has(key(a))) continue;
         await addAssignment({
           child_id: child.id,
           due_date: date,
@@ -144,9 +145,7 @@ export function Plan({
           {list.map((a) => (
             <div key={a.id} className="list-row">
               <span className="grow col">
-                <strong>
-                  {name(a.surah)} {a.verse_from}–{a.verse_to}
-                </strong>
+                <strong>{taskName(a, chapters)}</strong>
                 <TaskTag task={a} small />
               </span>
               <StatusBadge status={a.status} who="parent" small />
@@ -158,7 +157,7 @@ export function Plan({
                 <button
                   type="button"
                   className="icon-btn"
-                  aria-label={`Remove ${name(a.surah)}`}
+                  aria-label={`Remove ${taskName(a, chapters)}`}
                   onClick={() => setConfirmDelete(a.id)}
                 >
                   <IconTrash size={20} />

@@ -57,6 +57,10 @@ Same place again: paste everything from [`supabase/003_spaceship.sql`](supabase/
 
 Paste everything from [`supabase/004_cleanup.sql`](supabase/004_cleanup.sql) → **Run**.
 
+### 2e. Reading lessons (fifth and sixth SQL files)
+
+Paste [`supabase/005_replace_audio.sql`](supabase/005_replace_audio.sql) → **Run**, then [`supabase/006_reading.sql`](supabase/006_reading.sql) → **Run**.
+
 ### 3. Create the two logins
 
 1. **Authentication** → **Users** → **Add user** → **Create new user**.
@@ -139,6 +143,16 @@ Tasks appear on the tablet within about 20 seconds, or straight away when the ap
   "Add to known surahs" and "Keep this recording" (both ticked). You can tick "Keep" on any approval.
   Kept recordings can be played from the Surahs tab.
 - Approvals, stars, crystals and history are never removed. Only audio files are.
+
+### How the reading lessons work
+
+17 lessons in the order and difficulty of *Al-Qaida An-Nouraniyah*; the pages are the app's own (generated drills plus real Quran words from Quran.com that contain only what has been taught). Code: `src/lib/reading/`.
+
+- The parent switches reading on, opens each lesson (after previewing it and, if wanted, recording a model reading per page) and chooses the method switches, all on the **Reading** tab.
+- One page a day. The student's app builds it and saves it with the task (`assignments.track = 'reading'`), so the parent reviews exactly what was shown. An unfinished page moves to the next day.
+- A lesson passes when every page is approved; practice lessons (6, 9, 11, 13, 17) pass after two pages in a row approved at the first attempt.
+- When reviewing, tap what he read wrong: it is saved in `reading_mistakes` and comes back on later pages until a page containing it is approved at the first attempt.
+- Reading pages earn stars and crystals like surahs; each finished lesson lights one of 17 lights on the spaceship.
 
 ### How automatic revision works
 

@@ -22,7 +22,14 @@ export interface Assignment {
   created_at: string;
   source?: 'manual' | 'auto';
   crystals?: number;
+  /** 'reading' = a reading-lesson page; surah/verse then hold placeholders. */
+  track?: 'quran' | 'reading';
+  reading_lesson?: number | null;
+  reading_page?: number | null;
+  reading_content?: import('./reading/types').Page | null;
 }
+
+export const isReading = (a: Pick<Assignment, 'track'>) => a.track === 'reading';
 
 export interface Memorized {
   child_id: string;

@@ -214,9 +214,9 @@ export const IconCopy = (p: P) => (
 );
 
 /** The eight-point star medallion with a number inside. */
-export function Medallion({ n, tone = 'teal', size = 50 }: { n: number | string; tone?: 'teal' | 'gold' | 'plum'; size?: number }) {
-  const fill = tone === 'gold' ? '#F2E6CF' : tone === 'plum' ? '#EAE3F4' : '#DCEBE5';
-  const fg = tone === 'gold' ? '#6B4A12' : tone === 'plum' ? '#5A3E8A' : '#1E5E54';
+export function Medallion({ n, tone = 'teal', size = 50 }: { n: number | string; tone?: 'teal' | 'gold' | 'plum' | 'blue'; size?: number }) {
+  const fill = tone === 'gold' ? '#F2E6CF' : tone === 'plum' ? '#EAE3F4' : tone === 'blue' ? '#E2EAF6' : '#DCEBE5';
+  const fg = tone === 'gold' ? '#6B4A12' : tone === 'plum' ? '#5A3E8A' : tone === 'blue' ? '#2B5A9E' : '#1E5E54';
   return (
     <span className="medallion" style={{ width: size, height: size }}>
       <svg aria-hidden="true" width={size} height={size} viewBox="0 0 50 50">
@@ -261,3 +261,19 @@ export function IconGem({ size = 22 }: { size?: number }) {
     </svg>
   );
 }
+
+/** Reading lessons: the letters alif and ba. */
+export const IconReading = ({ size = 22, className }: P) => (
+  <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" className={className}>
+    <text x="12" y="17" textAnchor="middle" fontSize="15" fontFamily="Amiri, 'Noto Naskh Arabic', serif" fill="currentColor">
+      أ ب
+    </text>
+  </svg>
+);
+
+export const IconLock = (p: P) => (
+  <Svg {...p}>
+    <rect x="5" y="11" width="14" height="10" rx="2" />
+    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+  </Svg>
+);

@@ -1,10 +1,14 @@
 import type { Assignment, Profile, RecordingWithAssignment } from '../../lib/types';
 import type { Chapter } from '../../lib/quran';
-import { countStars, ensurePlan, fetchAssignments, fetchPending, fetchRecentlyReviewed, fetchStreak, fetchWallet } from '../../lib/data';
+import { fetchMemorized, countStars, ensurePlan, fetchAssignments, fetchPending, fetchRecentlyReviewed, fetchStreak, fetchWallet } from '../../lib/data';
 import { clock, fmtSec, greeting, isoDate, shortDate } from '../../lib/dates';
 import { usePolling } from '../../lib/usePolling';
 import { StatusBadge, TaskTag } from '../../components/Bits';
-import { IconForward, IconMic, IconPlus, IconWifiOff } from '../../components/Icons';
+import { taskKind, taskName } from '../../lib/labels';
+import { fetchReadingSettings, fetchReadingTasks, optionsOf } from '../../lib/reading/data';
+import { computeProgress } from '../../lib/reading/progress';
+import { knowsPoolSurah } from '../../lib/reading/lessons';
+import { IconForward, IconMic, IconPlus, IconReading, IconWifiOff } from '../../components/Icons';
 
 interface DashData {
   pending: RecordingWithAssignment[];
@@ -13,20 +17,33 @@ interface DashData {
   stars: number;
   crystals: number | null;
   streak: number;
+  /** A reading lesson waiting for the parent to open it. */
+  readingWaiting: number | null;
+}
+
+async function readingWaiting(childId: string): Promise<number | null> {
+  const s = await fetchReadingSettings(childId);
+  if (!s?.active) return null;
+  const tasks = await fetchReadingTasks(childId);
+  if (tasks.some((t) => t.status !== 'approved')) return null;
+  const memorized = await fetchMemorized(childId).catch(() => []);
+  const p = computeProgress(tasks, optionsOf(s), knowsPoolSurah(memorized.filter((m) => m.verse_from === 1).map((m) => m.surah)));
+  return s.opened.includes(p.next.lesson) ? null : p.next.lesson;
 }
 
 async function loadDash(childId: string): Promise<DashData> {
   const d = isoDate();
   await ensurePlan(childId, d).catch(() => undefined);
-  const [pending, today, recent, stars, streak, wallet] = await Promise.all([
+  const [pending, today, recent, stars, streak, wallet, waiting] = await Promise.all([
     fetchPending(childId),
     fetchAssignments(childId, d, d),
     fetchRecentlyReviewed(childId, 6),
     countStars(childId),
     fetchStreak(childId),
     fetchWallet(childId, d).catch(() => null),
+    readingWaiting(childId).catch(() => null),
   ]);
-  return { pending, today, recent, stars, streak, crystals: wallet?.balance ?? null };
+  return { pending, today, recent, stars, streak, crystals: wallet?.balance ?? null, readingWaiting: waiting };
 }
 
 export function Dashboard({
@@ -35,16 +52,16 @@ export function Dashboard({
   chapters,
   onOpenReview,
   onOpenPlan,
+  onOpenReading,
 }: {
   parent: Profile;
   child: Profile;
   chapters: Chapter[] | null;
   onOpenReview: (id: string) => void;
   onOpenPlan: () => void;
+  onOpenReading: () => void;
 }) {
   const dash = usePolling(() => loadDash(child.id), [child.id], 15000);
-  const name = (n: number) => chapters?.[n - 1]?.name ?? `Surah ${n}`;
-  const range = (a: Assignment) => `${a.verse_from}–${a.verse_to}`;
   const data = dash.data;
   const done = data ? data.today.filter((a) => a.status === 'approved').length : 0;
 
@@ -90,19 +107,32 @@ export function Dashboard({
         </div>
       </div>
 
+      {data?.readingWaiting && (
+        <button type="button" className="list-card" onClick={onOpenReading}>
+          <span className="icon-circle indigo">
+            <IconReading />
+          </span>
+          <span className="grow col">
+            <strong>Reading: lesson {data.readingWaiting} is waiting</strong>
+            <span className="muted small">
+              {child.display_name} finished the previous lesson. Preview it, record your model reading, then open it.
+            </span>
+          </span>
+          <IconForward size={20} />
+        </button>
+      )}
+
       <h2 className="p-h2">To review</h2>
       {data && data.pending.length === 0 && <div className="empty-box">All caught up. New recordings appear here.</div>}
       {data?.pending.map((r) => (
         <button key={r.id} type="button" className="list-card" onClick={() => onOpenReview(r.id)}>
-          <span className={`icon-circle ${r.assignment.kind === 'memorization' ? 'gold' : 'blue'}`}>
-            {r.assignment.kind === 'memorization' ? <IconPlus /> : <IconMic />}
+          <span className={`icon-circle ${r.assignment.track === 'reading' ? 'indigo' : r.assignment.kind === 'memorization' ? 'gold' : 'blue'}`}>
+            {r.assignment.track === 'reading' ? <IconReading /> : r.assignment.kind === 'memorization' ? <IconPlus /> : <IconMic />}
           </span>
           <span className="grow col">
-            <strong>
-              {name(r.assignment.surah)} · {range(r.assignment)}
-            </strong>
+            <strong>{taskName(r.assignment, chapters)}</strong>
             <span className="muted small">
-              {r.assignment.kind === 'memorization' ? 'New memorization' : 'Revision'} ·{' '}
+              {taskKind(r.assignment)} ·{' '}
               {r.assignment.due_date === isoDate() ? 'today' : shortDate(r.assignment.due_date)} {clock(r.created_at)} ·{' '}
               {fmtSec(r.duration_sec)} · attempt {r.attempt}
             </span>
@@ -132,9 +162,7 @@ export function Dashboard({
           {data.today.map((a) => (
             <div key={a.id} className="list-row">
               <span className="grow col">
-                <strong>
-                  {name(a.surah)} {range(a)}
-                </strong>
+                <strong>{taskName(a, chapters)}</strong>
                 <TaskTag task={a} small />
               </span>
               <StatusBadge status={a.status} who="parent" small />
@@ -150,7 +178,7 @@ export function Dashboard({
             {data.recent.map((r) => (
               <div key={r.id} className="list-row">
                 <span className="grow col">
-                  <strong>{name(r.assignment.surah)}</strong>
+                  <strong>{taskName(r.assignment, chapters, false)}</strong>
                   <span className="muted small">
                     {shortDate(r.assignment.due_date)} · attempt {r.attempt}
                     {r.note_path ? ' · voice note' : ''}

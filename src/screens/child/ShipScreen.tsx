@@ -17,9 +17,12 @@ export function ShipScreen({
   onWalletChange,
   onTab,
   onSignOut,
+  readingLights,
 }: {
   profile: Profile;
   wallet: Wallet | null;
+  /** Reading lessons finished, when the ship reward is switched on. */
+  readingLights?: number;
   onWalletChange: () => void;
   onTab: (t: ChildTab) => void;
   onSignOut: () => void;
@@ -129,7 +132,18 @@ export function ShipScreen({
             {state.loading && !state.data ? (
               <Spinner />
             ) : (
-              <Ship config={preview} size={420} float label={chosenItem ? `Your spaceship with ${chosenItem.name}` : 'Your spaceship'} />
+              <Ship
+                config={preview}
+                size={420}
+                float
+                lights={readingLights}
+                label={chosenItem ? `Your spaceship with ${chosenItem.name}` : 'Your spaceship'}
+              />
+            )}
+            {readingLights !== undefined && !choice && (
+              <span className="lights-note">
+                Reading lights {readingLights}/17
+              </span>
             )}
             {choice && !chosenIsFitted && (
               <span className="trying-on">Trying on: {chosenItem?.name ?? `no ${slotInfo.label.toLowerCase()}`}</span>
